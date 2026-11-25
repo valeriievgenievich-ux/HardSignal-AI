@@ -89,7 +89,16 @@
             }
 
             try {
-                const response = await fetch(`https://unframed-onlooker-harmonics.ngrok-free.dev/check?user_id=${userId}`);
+                               // Замени эту строку:
+                // const response = await fetch(`https://unframed-onlooker-harmonics.ngrok-free.dev/check?user_id=${userId}`);
+                
+                // На этот блок:
+                const response = await fetch(`https://unframed-onlooker-harmonics.ngrok-free.dev/check?user_id=${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
                 const data = await response.json();
                 
                 document.getElementById('debug-status').innerText = JSON.stringify(data);
