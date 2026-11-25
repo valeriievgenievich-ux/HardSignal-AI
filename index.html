@@ -38,7 +38,7 @@
         .top-bar h1 { font-size: 18px; font-weight: 800; margin: 0; background: linear-gradient(90deg, #fff, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         /* Экран блокировки */
-        .lock-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; text-align: center; }
+        .lock-screen { display: none; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; text-align: center; }
         .lock-icon { font-size: 50px; margin-bottom: 15px; filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5)); }
         .lock-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
         .lock-sub { font-size: 13px; color: var(--muted); margin-bottom: 30px; max-width: 280px; }
@@ -56,9 +56,7 @@
         .step-desc { font-size: 10px; color: var(--muted); }
         .step-status { font-size: 20px; }
 
-        .start-btn.disabled {
-            background: #2a3441; color: var(--muted); box-shadow: none; cursor: not-allowed;
-        }
+        .start-btn.disabled { background: #2a3441; color: var(--muted); box-shadow: none; cursor: not-allowed; }
 
         /* Плашка Signal */
         .signal-pill { background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); color: var(--gold); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 12px; }
@@ -114,7 +112,7 @@
 <body>
 
     <!-- ЭКРАН БЛОКИРОВКИ -->
-    <div id="lock-screen" class="lock-screen" style="display: none;">
+    <div id="lock-screen" class="lock-screen">
         <div class="lock-icon">🔒</div>
         <div class="lock-title">Access Locked</div>
         <div class="lock-sub">Complete all 3 steps below to unlock the AI Terminal.</div>
@@ -150,7 +148,7 @@
     <div id="app-screen" style="display: none; flex-direction: column; min-height: 100%;">
         <div class="top-bar">
             <h1>HardSignal AI</h1>
-            <div class="lang-btn" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 11px;">🌐 EN</div>
+            <div style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 11px;">🌐 EN</div>
         </div>
 
         <div style="text-align: center;">
@@ -212,23 +210,14 @@
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
 
-        // Получаем данные пользователя из Telegram
         const tgUser = Telegram.WebApp.initDataUnsafe?.user;
         const userId = tgUser ? tgUser.id : null;
 
-        // Ссылки на твои рефералки
-        const REF_LINK = "https://u3.shortink.io/register?utm_campaign=832928&utm_source=affiliate&utm_medium=sr&a=qUgg03lCStQU7h&al=1815124&ac=signal&cid=994543&code=WELCOME50";
-        const TRADE_LINK = "https://u3.shortink.io/main?utm_campaign=832928&utm_source=affiliate&utm_medium=sr&a=qUgg03lCStQU7h&al=1815151&ac=main&cid=994565&code=WELCOME50";
-
         function openLink(url) {
-            // Добавляем click_id (Telegram ID), чтобы постбэк работал
-            if (userId) {
-                url += `&click_id=${userId}`;
-            }
-            Telegram.WebApp.openLink(url); // Открываем ссылку прямо в Telegram
+            if (userId) url += `&click_id=${userId}`;
+            Telegram.WebApp.openLink(url);
         }
 
-        // Проверяем статус пользователя через бота (запрос к твоему серверу)
         async function checkStatus() {
             if (!userId) {
                 document.getElementById('lock-screen').style.display = 'flex';
@@ -236,33 +225,29 @@
             }
 
             try {
-                // Стучимся на наш uvicorn сервер, чтобы узнать статус
-                const response = await fetch(`https://твой-домен.ngrok-free.app/check?user_id=${userId}`);
+                // Твой ngrok-адрес
+                const response = await fetch(`https://unframed-onlooker-harmonics.ngrok-free.dev/check?user_id=${userId}`);
                 const data = await response.json();
 
                 if (data.subscribed && data.registered && data.deposited) {
-                    // Всё сделано — показываем основной экран
                     document.getElementById('lock-screen').style.display = 'none';
                     document.getElementById('app-screen').style.display = 'flex';
                     initMiniCharts();
                 } else {
-                    // Не всё сделано — показываем экран блокировки
                     document.getElementById('lock-screen').style.display = 'flex';
                     document.getElementById('app-screen').style.display = 'none';
 
-                    // Отмечаем зелеными галочками то, что уже сделано
                     if (data.subscribed) { document.getElementById('status-1').innerText = '✅'; document.getElementById('step-1').classList.add('done'); }
                     if (data.registered) { document.getElementById('status-2').innerText = '✅'; document.getElementById('step-2').classList.add('done'); }
                     if (data.deposited) { document.getElementById('status-3').innerText = '✅'; document.getElementById('step-3').classList.add('done'); }
                 }
             } catch (e) {
                 console.error("Ошибка проверки статуса:", e);
-                // Если сервер недоступен, показываем экран блокировки (на всякий случай)
                 document.getElementById('lock-screen').style.display = 'flex';
             }
         }
 
-        checkStatus(); // Запускаем проверку при открытии
+        checkStatus(); // Запускаем проверку
 
         setInterval(() => {
             const now = new Date();
@@ -289,7 +274,6 @@
 
         function startAnalysis() {
             document.getElementById('startBtn').style.display = 'none';
-            
             const cards = ['card-trend', 'card-support', 'card-momentum', 'card-volume'];
             const vals = ['val-trend', 'val-support', 'val-momentum', 'val-volume'];
             const subtexts = ["Checking the hourly trend...", "Analyzing support levels...", "Measuring momentum...", "Processing volume..."];
