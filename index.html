@@ -456,10 +456,17 @@
         let isAnalyzing = false;
         let newAnalysisInterval = null;
 
-        // ====== ПРОВЕРКА СТАТУСА ======
+        // ====== ИЗМЕНЕННАЯ ФУНКЦИЯ openLink ======
         function openLink(url) {
-            if (userId) url += `&click_id=${userId}`;
-            Telegram.WebApp.openLink(url);
+            // Если ссылка ведёт на Telegram-канал, открываем её внутри Telegram
+            if (url.includes('t.me/')) {
+                const channelUsername = url.split('t.me/')[1].split('?')[0];
+                Telegram.WebApp.openTelegramLink(`https://t.me/${channelUsername}`);
+            } else {
+                // Для партнёрских ссылок Pocket Option оставляем openLink
+                if (userId) url += `&click_id=${userId}`;
+                Telegram.WebApp.openLink(url);
+            }
         }
 
         async function checkStatus() {
