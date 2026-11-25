@@ -100,15 +100,103 @@
 
         /* Центральная плашка Analyzing */
         .center-container { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; width: 100%;}
-        .glass-card { width: 100%; background: linear-gradient(135deg, rgba(60, 30, 100, 0.8), rgba(20, 15, 30, 0.9)); border: 1px solid rgba(138, 43, 226, 0.4); border-radius: 16px; padding: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 30px rgba(138, 43, 226, 0.2); }
-        .logo-circle { width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, transparent 70%); display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255, 215, 0, 0.5); box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); animation: pulseLogo 2s infinite alternate; }
-        @keyframes pulseLogo { from { transform: scale(1); } to { transform: scale(1.05); } }
-        .analyzing-title { font-size: 16px; font-weight: 800; color: #fff; display: flex; align-items: baseline; }
+        .glass-card { width: 100%; background: linear-gradient(135deg, rgba(60, 30, 100, 0.8), rgba(20, 15, 30, 0.9)); border: 1px solid rgba(138, 43, 226, 0.4); border-radius: 16px; padding: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 30px rgba(138, 43, 226, 0.2); transition: border-color 0.5s, box-shadow 0.5s; }
+        
+        /* AI CORE — пульсирующее кольцо */
+        .ai-core {
+            width: 44px;
+            height: 44px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .ai-core-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--gold);
+            border-right-color: var(--purple);
+            animation: rotateRing 1.2s linear infinite;
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+            transition: border-color 0.5s, filter 0.5s;
+        }
+        .ai-core-ring-inner {
+            position: absolute;
+            width: 70%;
+            height: 70%;
+            border-radius: 50%;
+            border: 1.5px solid transparent;
+            border-bottom-color: var(--purple);
+            border-left-color: var(--gold);
+            animation: rotateRingReverse 1.8s linear infinite;
+            opacity: 0.7;
+            transition: border-color 0.5s;
+        }
+        .ai-core-center {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--gold) 0%, var(--purple) 100%);
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.6), 0 0 20px rgba(138, 43, 226, 0.4);
+            animation: pulseCore 1.5s ease-in-out infinite;
+            transition: background 0.5s, box-shadow 0.5s;
+        }
+        @keyframes rotateRing {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes rotateRingReverse {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+        @keyframes pulseCore {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.15); opacity: 0.85; }
+        }
+
+        /* AI CORE — состояние BUY (зелёное) */
+        .ai-core.buy .ai-core-ring {
+            border-top-color: var(--green);
+            border-right-color: var(--green);
+            filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.8));
+            animation-duration: 0.8s;
+        }
+        .ai-core.buy .ai-core-ring-inner {
+            border-bottom-color: var(--green);
+            border-left-color: var(--green);
+        }
+        .ai-core.buy .ai-core-center {
+            background: radial-gradient(circle, var(--green) 0%, #008f4c 100%);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.9), 0 0 25px rgba(0, 255, 136, 0.5);
+        }
+
+        /* AI CORE — состояние SELL (розово-красное) */
+        .ai-core.sell .ai-core-ring {
+            border-top-color: var(--red);
+            border-right-color: #ff8fa3;
+            filter: drop-shadow(0 0 10px rgba(255, 51, 102, 0.8));
+            animation-duration: 0.8s;
+        }
+        .ai-core.sell .ai-core-ring-inner {
+            border-bottom-color: var(--red);
+            border-left-color: #ff8fa3;
+        }
+        .ai-core.sell .ai-core-center {
+            background: radial-gradient(circle, var(--red) 0%, #8f0033 100%);
+            box-shadow: 0 0 15px rgba(255, 51, 102, 0.9), 0 0 25px rgba(255, 51, 102, 0.5);
+        }
+
+        .analyzing-content { flex-grow: 1; }
+        .analyzing-title { font-size: 16px; font-weight: 800; color: #fff; display: flex; align-items: baseline; transition: color 0.5s; }
         .dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
         @keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
         .analyzing-subtext { font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 5px; margin-top: 2px; }
         .progress-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 6px; }
-        .progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--purple), var(--gold)); transition: width 0.4s ease; }
+        .progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--purple), var(--gold)); transition: width 0.4s ease, background 0.5s; }
 
         /* Сетка карточек */
         .readings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; color: var(--muted); font-weight: 600; width: 100%;}
@@ -290,9 +378,14 @@
         </div>
 
         <div class="center-container">
-            <div class="glass-card">
-                <div class="logo-circle">✨</div>
-                <div style="flex-grow: 1;">
+            <div class="glass-card" id="aiCoreCard">
+                <!-- AI CORE — пульсирующее кольцо -->
+                <div class="ai-core" id="aiCore">
+                    <div class="ai-core-ring"></div>
+                    <div class="ai-core-ring-inner"></div>
+                    <div class="ai-core-center"></div>
+                </div>
+                <div class="analyzing-content">
                     <div class="analyzing-title"><span id="anim-title">Analyzing</span><span class="dots"></span></div>
                     <div class="analyzing-subtext"><span>⚙️</span> <span id="anim-subtext">Checking the hourly trend...</span></div>
                     <div class="progress-bar"><div class="progress" id="progress"></div></div>
@@ -462,8 +555,20 @@
             });
         }
 
+        // AI CORE состояние — сброс в "анализ"
+        function setCoreState(state) {
+            const core = document.getElementById('aiCore');
+            core.classList.remove('buy', 'sell');
+            if (state === 'buy') core.classList.add('buy');
+            if (state === 'sell') core.classList.add('sell');
+        }
+
         function startAnalysis() {
             document.getElementById('startBtn').style.display = 'none';
+            
+            // Сбрасываем AI CORE в режим анализа
+            setCoreState('analyzing');
+            
             const cards = ['card-trend', 'card-support', 'card-momentum', 'card-volume'];
             const vals = ['val-trend', 'val-support', 'val-momentum', 'val-volume'];
             const subtexts = ["Checking the hourly trend...", "Analyzing support levels...", "Measuring momentum...", "Processing volume..."];
@@ -476,91 +581,4 @@
                     document.getElementById(vals[i]).innerText = values[i];
                     document.getElementById('anim-subtext').innerText = subtexts[i];
                     document.getElementById('step-counter').innerText = `${i + 1} of 4`;
-                    document.getElementById('progress').style.width = ((i + 1) / cards.length) * 100 + '%';
-                    i++;
-                } else {
-                    clearInterval(interval);
-                    document.getElementById('anim-title').innerText = "Complete";
-                    document.getElementById('anim-subtext').innerText = "Signal generated!";
-                    setTimeout(showResult, 800);
-                }
-            }, 1500);
-        }
-
-        // ФУНКЦИЯ ДЛЯ ГЕНЕРАЦИИ LIVE ACTIVITY (в пределах последних 3 минут от текущего UTC)
-        function generateLiveActivity() {
-            const list = document.getElementById('activity-list');
-            list.innerHTML = ''; // Очищаем старые записи
-
-            const numRecords = 5; // Количество записей
-            const now = new Date();
-            const nowUtcMs = now.getTime();
-
-            // Генерируем записи с временем в пределах последних 3 минут (180 000 мс)
-            let records = [];
-            for (let i = 0; i < numRecords; i++) {
-                // Случайное время в пределах от 0 до 180 секунд назад
-                const secondsAgo = Math.floor(Math.random() * 180);
-                const timestamp = nowUtcMs - (secondsAgo * 1000);
-                const date = new Date(timestamp);
-                const timeStr = date.toISOString().substr(11, 5); // ЧЧ:ММ (без секунд, как в твоём примере)
-                
-                const randomPair = pairs[Math.floor(Math.random() * pairs.length)];
-                const isBuy = Math.random() > 0.5;
-                
-                records.push({
-                    timeMs: timestamp,
-                    timeStr: timeStr,
-                    pair: randomPair,
-                    isBuy: isBuy
-                });
-            }
-
-            // Сортируем по времени (сначала самые новые)
-            records.sort((a, b) => b.timeMs - a.timeMs);
-
-            // Отображаем
-            records.forEach(rec => {
-                const row = document.createElement('div');
-                row.className = 'activity-item';
-                row.innerHTML = `
-                    <span class="activity-time">${rec.timeStr}</span>
-                    <span>${rec.pair}</span>
-                    <span class="activity-tag ${rec.isBuy ? 'buy' : 'sell'}">${rec.isBuy ? 'BUY' : 'SELL'}</span>
-                `;
-                list.appendChild(row);
-            });
-        }
-
-        function showResult() {
-            document.getElementById('app-screen').style.display = 'none';
-            document.getElementById('result-screen').style.display = 'flex';
-            
-            const isBuy = Math.random() > 0.5;
-            const randomPair = pairs[Math.floor(Math.random() * pairs.length)];
-            
-            // НОВЫЕ ВРЕМЕННЫЕ ИНТЕРВАЛЫ: 5 сек, 15 сек, 30 сек, 1 мин
-            const expOptions = ["5 sec", "15 sec", "30 sec", "1 min"];
-            const exp = expOptions[Math.floor(Math.random() * expOptions.length)];
-            
-            document.getElementById('result-pair').innerText = randomPair;
-            document.getElementById('result-exp').innerText = `Expiration: ${exp}`;
-            const sigEl = document.getElementById('result-signal');
-            sigEl.innerText = isBuy ? "BUY 📈" : "SELL 📉";
-            sigEl.className = isBuy ? "result-signal buy" : "result-signal sell";
-
-            // Обновление данных для блока Signal Intelligence
-            document.getElementById('info-trend').innerText = isBuy ? "Bullish" : "Bearish";
-            document.getElementById('info-trend').style.color = isBuy ? "var(--green)" : "var(--red)";
-            
-            const infoSignal = document.getElementById('info-signal');
-            infoSignal.innerText = isBuy ? "BUY" : "SELL";
-            infoSignal.style.color = isBuy ? "var(--green)" : "var(--red)";
-            
-            document.getElementById('info-exp').innerText = exp.toUpperCase();
-
-            // Запускаем генерацию Live Activity
-            generateLiveActivity();
-
-            // И обновляем её каждые 5 секунд, пока пользователь на экране результата
-            if (window.liveActivityInterval) clearInterval(window.live
+                    document.getElementById('progress').style.width = ((i + 1) / cards.length) * 100
