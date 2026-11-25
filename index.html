@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HardSignal AI</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background-color: #0e1117; color: white; font-family: sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; margin: 0; overflow: hidden;
+        }
+        .container { text-align: center; padding: 20px; width: 90%; max-width: 400px; }
+        .status { font-size: 18px; margin-bottom: 20px; color: #9ca3af; font-weight: bold; }
+        .progress-bar {
+            width: 100%; height: 12px; background-color: #1f2329;
+            border-radius: 6px; margin-bottom: 30px; overflow: hidden;
+        }
+        .progress { width: 0%; height: 100%; background-color: #00c853; transition: width 0.4s ease; }
+        .result { font-size: 40px; font-weight: 900; display: none; margin-top: 20px; text-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .buy { color: #00c853; }
+        .sell { color: #ff3d00; }
+        button {
+            background-color: #00c853; color: #0e1117; border: none;
+            padding: 18px 40px; font-size: 20px; font-weight: bold;
+            border-radius: 12px; cursor: pointer; width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 200, 83, 0.3);
+        }
+        button:active { transform: scale(0.98); }
+        .check { color: #00c853; font-size: 20px; margin-right: 10px; }
+        .step-text { text-align: left; margin-bottom: 15px; display: none; font-size: 14px; color: #9ca3af;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="status" id="status">Ready to analyze</div>
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        
+        <div id="steps-container">
+            <div class="step-text" id="step1"><span class="check">✓</span> Analyzing trend...</div>
+            <div class="step-text" id="step2"><span class="check">✓</span> Checking resistance...</div>
+            <div class="step-text" id="step3"><span class="check">✓</span> Analyzing momentum...</div>
+            <div class="step-text" id="step4"><span class="check">✓</span> Generating signal...</div>
+        </div>
+
+        <div class="result" id="result"></div>
+        <button id="startBtn" onclick="startAnalysis()">🚀 START ANALYSIS</button>
+    </div>
+
+    <script>
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand(); // Разворачиваем на весь экран
+
+        function startAnalysis() {
+            const status = document.getElementById('status');
+            const progress = document.getElementById('progress');
+            const result = document.getElementById('result');
+            const btn = document.getElementById('startBtn');
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+
+            btn.style.display = 'none';
+            result.style.display = 'none';
+            progress.style.width = '0%';
+            steps.forEach(s => document.getElementById(s).style.display = 'none');
+
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < steps.length) {
+                    // Показываем текст и закрашиваем прогресс
+                    document.getElementById(steps[i]).style.display = 'block';
+                    status.innerText = "AI is thinking...";
+                    progress.style.width = ((i + 1) / steps.length) * 100 + '%';
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    status.innerText = "Analysis Complete!";
+                    
+                    // Рандомный результат
+                    const isBuy = Math.random() > 0.5;
+                    result.innerText = isBuy ? "BUY 📈" : "SELL 📉";
+                    result.className = isBuy ? "result buy" : "result sell";
+                    result.style.display = "block";
+                }
+            }, 1200); // Задержка между шагами
+        }
+    </script>
+</body>
+</html>
