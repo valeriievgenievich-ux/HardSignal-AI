@@ -191,6 +191,31 @@
         .prem-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--prem-green); box-shadow: 0 0 6px var(--prem-green); }
         .prem-status-text { font-size: 10px; font-weight: 600; color: var(--prem-green); letter-spacing: 0.5px; }
 
+        /* AI CORE на второй странице (New Analysis) — ТЕПЕРЬ СВЕРХУ */
+        .new-analysis-container {
+            background: var(--prem-card);
+            border: 1px solid var(--prem-border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .new-analysis-container:hover {
+            border-color: var(--prem-blue);
+        }
+        .new-analysis-container .ai-core-ring { border-top-color: var(--prem-blue); border-right-color: var(--purple); filter: drop-shadow(0 0 8px rgba(88, 166, 255, 0.6)); }
+        .new-analysis-container .ai-core-ring-inner { border-bottom-color: var(--purple); border-left-color: var(--prem-blue); }
+        .new-analysis-container .ai-core-center { background: radial-gradient(circle, var(--prem-blue) 0%, var(--purple) 100%); box-shadow: 0 0 12px rgba(88, 166, 255, 0.6), 0 0 20px rgba(138, 43, 226, 0.4); }
+        
+        .new-analysis-title { font-size: 16px; font-weight: 800; color: var(--prem-text); display: flex; align-items: baseline; }
+        .new-analysis-subtext { font-size: 10px; color: var(--prem-muted); margin-top: 2px; }
+        .new-analysis-progress-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+        .new-analysis-progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--purple), var(--prem-blue)); transition: width 0.4s ease; }
+
         .prem-card {
             background: var(--prem-card); border: 1px solid var(--prem-border);
             border-radius: 12px; padding: 16px; margin-bottom: 12px; width: 100%;
@@ -238,31 +263,6 @@
         .prem-signal-type { font-weight: 700; font-size: 11px; padding: 3px 10px; border-radius: 4px; letter-spacing: 0.5px; }
         .prem-signal-type.buy { color: var(--prem-green); background: rgba(46, 160, 67, 0.1); }
         .prem-signal-type.sell { color: var(--prem-red); background: rgba(248, 81, 73, 0.1); }
-
-        /* AI CORE на второй странице (New Analysis) */
-        .new-analysis-container {
-            background: var(--prem-card);
-            border: 1px solid var(--prem-border);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .new-analysis-container:hover {
-            border-color: var(--prem-blue);
-        }
-        .new-analysis-container .ai-core-ring { border-top-color: var(--prem-blue); border-right-color: var(--purple); filter: drop-shadow(0 0 8px rgba(88, 166, 255, 0.6)); }
-        .new-analysis-container .ai-core-ring-inner { border-bottom-color: var(--purple); border-left-color: var(--prem-blue); }
-        .new-analysis-container .ai-core-center { background: radial-gradient(circle, var(--prem-blue) 0%, var(--purple) 100%); box-shadow: 0 0 12px rgba(88, 166, 255, 0.6), 0 0 20px rgba(138, 43, 226, 0.4); }
-        
-        .new-analysis-title { font-size: 16px; font-weight: 800; color: var(--prem-text); display: flex; align-items: baseline; }
-        .new-analysis-subtext { font-size: 10px; color: var(--prem-muted); margin-top: 2px; }
-        .new-analysis-progress-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 6px; }
-        .new-analysis-progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--purple), var(--prem-blue)); transition: width 0.4s ease; }
 
         .prem-footer { text-align: center; font-size: 9px; color: var(--prem-muted); text-transform: uppercase; letter-spacing: 1px; padding: 16px 0; }
 
@@ -373,6 +373,20 @@
             </div>
         </div>
 
+        <!-- AI CORE: NEW ANALYSIS (СВЕРХУ) -->
+        <div class="new-analysis-container" id="newAnalysisBtn" onclick="runNewAnalysis()">
+            <div class="ai-core" id="newAiCore">
+                <div class="ai-core-ring"></div>
+                <div class="ai-core-ring-inner"></div>
+                <div class="ai-core-center"></div>
+            </div>
+            <div class="analyzing-content">
+                <div class="new-analysis-title"><span id="newAnimTitle">New Analysis</span><span class="dots" id="newDots" style="display: none;"></span></div>
+                <div class="new-analysis-subtext"><span>⚙️</span> <span id="newAnimSubtext">Click to start...</span></div>
+                <div class="new-analysis-progress-bar"><div class="new-analysis-progress" id="newProgress"></div></div>
+            </div>
+        </div>
+
         <!-- Market Analysis -->
         <div class="prem-card">
             <div class="prem-card-header">
@@ -424,20 +438,6 @@
                 <a href="#" class="prem-recent-view-all" onclick="backToHome(); return false;">← BACK</a>
             </div>
             <div id="prem-recent-list"></div>
-        </div>
-
-        <!-- AI CORE: NEW ANALYSIS -->
-        <div class="new-analysis-container" id="newAnalysisBtn" onclick="runNewAnalysis()">
-            <div class="ai-core" id="newAiCore">
-                <div class="ai-core-ring"></div>
-                <div class="ai-core-ring-inner"></div>
-                <div class="ai-core-center"></div>
-            </div>
-            <div class="analyzing-content">
-                <div class="new-analysis-title"><span id="newAnimTitle">New Analysis</span><span class="dots" id="newDots"></span></div>
-                <div class="new-analysis-subtext"><span>⚙️</span> <span id="newAnimSubtext">Click to start...</span></div>
-                <div class="new-analysis-progress-bar"><div class="new-analysis-progress" id="newProgress"></div></div>
-            </div>
         </div>
 
         <div class="prem-footer">Powered by Claude Fable 5.2</div>
@@ -672,11 +672,10 @@
             document.getElementById('newAnimTitle').innerText = 'New Analysis';
             document.getElementById('newAnimSubtext').innerText = 'Click to start...';
             document.getElementById('newProgress').style.width = '0%';
-            document.getElementById('newDots').style.display = 'none'; // Скрываем точки пока не нажали
+            document.getElementById('newDots').style.display = 'none';
             const core = document.getElementById('newAiCore');
             core.classList.remove('buy', 'sell');
             
-            // Восстанавливаем кликабельность
             const btn = document.getElementById('newAnalysisBtn');
             btn.style.pointerEvents = 'auto';
             btn.style.opacity = '1';
@@ -719,16 +718,12 @@
                     dots.style.display = 'none';
                     subtext.innerText = 'Signal generated!';
                     
-                    // Обновляем сигнал
                     generatePremiumSignal();
                     generatePrefs();
 
                     setTimeout(() => {
                         resetNewAnalysisState();
                         isAnalyzing = false;
-                        // Меняем цвет ядра на основе последнего сигнала
-                        const isBuy = document.getElementById('prem-signal-value').style.color === 'var(--prem-green)' || document.getElementById('prem-signal-value').style.color === 'rgb(46, 160, 67)';
-                        // Просто проверяем класс, который мы поставили в generatePremiumSignal
                         const sigClass = document.getElementById('prem-signal-value').className;
                         if (sigClass.includes('sell')) {
                             core.classList.add('sell');
@@ -737,7 +732,7 @@
                         }
                     }, 1000);
                 }
-            }, 1200); // Каждые 1.2 сек меняем шаг
+            }, 1200);
         }
 
         function backToHome() {
