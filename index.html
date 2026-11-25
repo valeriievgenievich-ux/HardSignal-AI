@@ -250,14 +250,6 @@
             sigEl.className = isBuy ? "signal buy" : "signal sell";
 
             setTimeout(() => renderChart(isBuy), 100);
-            // Отправляем данные боту
-if (window.Telegram && Telegram.WebApp) {
-    Telegram.WebApp.sendData(JSON.stringify({ 
-        pair: randomPair, 
-        signal: isBuy ? "BUY" : "SELL",
-        exp: exp
-    }));
-}
         }
 
         function renderChart(isBuy) {
