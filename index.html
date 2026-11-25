@@ -539,6 +539,7 @@
 
         const pairs = ["EUR/USD OTC", "GBP/USD OTC", "USD/JPY OTC", "AUD/CAD OTC", "NZD/USD OTC"];
         let mainChartInstance = null;
+        let liveActivityInterval = null;
         
         function initMiniCharts() {
             const charts = ['chart-trend', 'chart-support', 'chart-momentum', 'chart-volume'];
@@ -555,7 +556,7 @@
             });
         }
 
-        // AI CORE состояние — сброс в "анализ"
+        // AI CORE состояние
         function setCoreState(state) {
             const core = document.getElementById('aiCore');
             core.classList.remove('buy', 'sell');
@@ -581,4 +582,13 @@
                     document.getElementById(vals[i]).innerText = values[i];
                     document.getElementById('anim-subtext').innerText = subtexts[i];
                     document.getElementById('step-counter').innerText = `${i + 1} of 4`;
-                    document.getElementById('progress').style.width = ((i + 1) / cards.length) * 100
+                    document.getElementById('progress').style.width = ((i + 1) / cards.length) * 100 + '%';
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    document.getElementById('anim-title').innerText = "Complete";
+                    document.getElementById('anim-subtext').innerText = "Signal generated!";
+                    setTimeout(showResult, 800);
+                }
+            }, 1500);
+        }
