@@ -56,7 +56,40 @@
         .step-desc { font-size: 10px; color: var(--muted); }
         .step-status { font-size: 20px; }
 
-        .start-btn.disabled { background: #2a3441; color: var(--muted); box-shadow: none; cursor: not-allowed; }
+        /* Кнопка Start */
+        .start-btn { 
+            width: 100%; max-width: 320px; padding: 15px; border: none; border-radius: 14px; 
+            background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; 
+            font-size: 14px; font-weight: 900; letter-spacing: 1px; cursor: pointer; 
+            transition: all 0.3s; box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3); margin-top: 20px;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+            position: relative;
+        }
+        .start-btn:active { transform: scale(0.98); }
+        
+        /* Стили для загрузки на кнопке */
+        .start-btn.loading {
+            background: #2a3441;
+            color: var(--muted);
+            cursor: not-allowed;
+            box-shadow: none;
+            pointer-events: none;
+        }
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--gold);
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .start-btn.loading .spinner {
+            display: block;
+        }
 
         /* Плашка Signal */
         .signal-pill { background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); color: var(--gold); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 12px; }
@@ -90,10 +123,6 @@
         .card-title { font-size: 9px; color: var(--muted); font-weight: 600; }
         .card-value { font-size: 9px; font-weight: 800; color: var(--gold); text-align: right; }
         .mini-chart { height: 30px; width: 100%; margin-top: 2px; position: relative; }
-
-        /* Кнопка Start */
-        .start-btn { width: 100%; padding: 15px; border: none; border-radius: 14px; background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; font-size: 14px; font-weight: 900; letter-spacing: 1px; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3); margin-top: auto; }
-        .start-btn:active { transform: scale(0.98); }
 
         /* Экран результата */
         .result-box { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.4s ease; width: 100%;}
@@ -141,7 +170,11 @@
             <div class="step-status" id="status-3">⏳</div>
         </div>
 
-        <button class="start-btn disabled" style="margin-top: 20px;">START ANALYSIS</button>
+        <!-- Кнопка с анимацией загрузки -->
+        <button class="start-btn" id="checkBtn" onclick="refreshStatus()">
+            <span id="btnText">START ANALYSIS</span>
+            <div class="spinner" id="btnSpinner"></div>
+        </button>
     </div>
 
     <!-- ОСНОВНОЙ ЭКРАН -->
@@ -225,7 +258,6 @@
             }
 
             try {
-                // ВАЖНО: добавлен заголовок ngrok-skip-browser-warning
                 const response = await fetch(`https://unframed-onlooker-harmonics.ngrok-free.dev/check?user_id=${userId}`, {
                     method: 'GET',
                     headers: {
@@ -253,6 +285,23 @@
         }
 
         checkStatus();
+
+        // Функция с анимацией вращения
+        function refreshStatus() {
+            const btn = document.getElementById('checkBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('btnSpinner');
+            
+            // Включаем режим загрузки
+            btn.classList.add('loading');
+            btnText.innerText = "Checking...";
+            spinner.style.display = 'block';
+            
+            // Через 1.5 секунды перезагружаем страницу
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        }
 
         setInterval(() => {
             const now = new Date();
