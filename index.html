@@ -9,7 +9,6 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 
         :root {
             --bg: #0a0514;
@@ -19,8 +18,7 @@
             --red: #ff3366;
             --gold: #ffd700;
             --purple: #8a2be2;
-            --blue: #3b82f6; /* Добавили синий */
-            --blue-glow: rgba(59, 130, 246, 0.4);
+            --blue: #3b82f6;
             --text: #ffffff;
             --muted: #8b8b9f;
         }
@@ -122,7 +120,7 @@
         .card-value { font-size: 9px; font-weight: 800; color: var(--gold); text-align: right; }
         .mini-chart { height: 30px; width: 100%; margin-top: 2px; position: relative; }
 
-        /* НОВЫЙ БЛОК: Синяя панель подключения (вместо пустоты) */
+        /* Блок подключения */
         .connect-panel {
             background: linear-gradient(135deg, rgba(20, 30, 60, 0.8), rgba(10, 15, 30, 0.9));
             border: 1px solid rgba(59, 130, 246, 0.4);
@@ -133,21 +131,29 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 0 20px var(--blue-glow);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
             position: relative;
             overflow: hidden;
             animation: pulseBlue 3s infinite alternate;
             cursor: pointer;
-            text-decoration: none; /* На случай если это ссылка */
+            text-decoration: none;
         }
         @keyframes pulseBlue {
-            from { box-shadow: 0 0 10px var(--blue-glow); }
-            to { box-shadow: 0 0 25px rgba(59, 130, 246, 0.7); }
+            from { box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+            to { box-shadow: 0 0 25px rgba(59, 130, 246, 0.5); }
         }
         .connect-info { display: flex; flex-direction: column; gap: 2px; text-align: left; }
-        .connect-title { font-size: 13px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px; }
+        .connect-title { font-size: 13px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; }
         .connect-sub { font-size: 10px; color: var(--blue); font-weight: 600; }
-        .connect-icon { font-size: 24px; filter: drop-shadow(0 0 8px var(--blue)); }
+        
+        .claude-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--gold) 0%, #ff8c00 100%);
+            -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>') no-repeat center / contain;
+            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>') no-repeat center / contain;
+            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+        }
         
         /* Экран результата */
         .result-box { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.4s ease; width: 100%;}
@@ -159,8 +165,66 @@
         .sell { color: var(--red); text-shadow: 0 0 20px rgba(255,51,102,0.4); }
         .result-exp { font-size: 12px; color: var(--muted); font-weight: 600; }
         #chart-wrapper { flex-grow: 1; width: 100%; position: relative; background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 10px; margin-bottom: 15px; min-height: 200px; }
+
+        /* Новые блоки на экране результата */
+        .info-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 10px;
+            width: 100%;
+            text-align: left;
+        }
+        .info-header {
+            font-size: 10px;
+            color: var(--muted);
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+        .info-row:last-child { margin-bottom: 0; }
+        .info-label { color: var(--muted); font-weight: 600; }
+        .info-value { font-weight: 800; color: #fff; }
         
-        .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text); padding: 12px; border-radius: 14px; font-weight: 600; text-align: center; text-decoration: none; display: block; font-size: 13px; }
+        .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            display: inline-block;
+            margin-right: 5px;
+            box-shadow: 0 0 5px var(--green);
+        }
+
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--muted);
+            font-family: monospace;
+        }
+        .activity-time { color: var(--purple); font-weight: 600; }
+        .activity-tag { font-weight: 800; }
+        .activity-tag.buy { color: var(--green); }
+        .activity-tag.sell { color: var(--red); }
+
+        .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text); padding: 12px; border-radius: 14px; font-weight: 600; text-align: center; text-decoration: none; display: block; font-size: 13px; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -248,13 +312,15 @@
             <div class="card" id="card-volume"><div class="card-header"><span class="card-title">Volume</span><span class="card-value" id="val-volume">...</span></div><div class="mini-chart"><canvas id="chart-volume"></canvas></div></div>
         </div>
 
-        <!-- НОВАЯ СИНЯЯ ПАНЕЛЬ (вместо черного поля) -->
         <a href="https://u3.shortink.io/main?utm_campaign=832928&utm_source=affiliate&utm_medium=sr&a=qUgg03lCStQU7h&al=1815151&ac=main&cid=994565&code=WELCOME50" target="_blank" class="connect-panel">
             <div class="connect-info">
-                <div class="connect-title">🔗 Connect to Pocket Option</div>
-                <div class="connect-sub">AI is ready. Awaiting connection...</div>
+                <div class="connect-title">
+                    <div class="claude-icon"></div>
+                    Connect to Pocket Option
+                </div>
+                <div class="connect-sub">Claude Fable 5.2 is ready. Awaiting connection...</div>
             </div>
-            <div class="connect-icon">🤖</div>
+            <div style="color: var(--blue); font-size: 18px; font-weight: 800;">→</div>
         </a>
 
         <button class="start-btn" id="startBtn" onclick="startAnalysis()">START ANALYSIS</button>
@@ -268,7 +334,57 @@
             <div class="result-exp" id="result-exp">Expiration: 3 min</div>
         </div>
         <div id="chart-wrapper"><canvas id="mainChart"></canvas></div>
-        <a href="#" onclick="location.reload()" class="btn-secondary" style="margin-top: 15px;">Analyze Again</a>
+
+        <!-- AI Agent Status -->
+        <div class="info-card">
+            <div class="info-header">AI Agent Status</div>
+            <div class="info-row">
+                <span class="info-label"><span class="status-dot"></span>Claude AI Agent</span>
+                <span class="info-value" style="color: var(--green);">ONLINE</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Engine</span>
+                <span class="info-value">Claude Fable 5.2</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Platform</span>
+                <span class="info-value">Pocket Option</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status</span>
+                <span class="info-value">Monitoring market</span>
+            </div>
+        </div>
+
+        <!-- Signal Intelligence -->
+        <div class="info-card">
+            <div class="info-header">Signal Intelligence</div>
+            <div class="info-row">
+                <span class="info-label">Trend</span>
+                <span class="info-value" id="info-trend">Bearish</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Signal</span>
+                <span class="info-value" id="info-signal" style="color: var(--red);">SELL</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Expiration</span>
+                <span class="info-value" id="info-exp">1 MIN</span>
+            </div>
+        </div>
+
+        <!-- Live Trading Activity -->
+        <div class="info-card">
+            <div class="info-header">Live Trading Activity</div>
+            <div class="activity-list">
+                <div class="activity-item"><span class="activity-time">14:32</span><span>NZD/USD</span><span class="activity-tag sell">SELL</span></div>
+                <div class="activity-item"><span class="activity-time">14:31</span><span>EUR/USD</span><span class="activity-tag buy">BUY</span></div>
+                <div class="activity-item"><span class="activity-time">14:29</span><span>GBP/USD</span><span class="activity-tag sell">SELL</span></div>
+                <div class="activity-item"><span class="activity-time">14:25</span><span>USD/JPY</span><span class="activity-tag buy">BUY</span></div>
+            </div>
+        </div>
+
+        <a href="#" onclick="location.reload()" class="btn-secondary">Analyze Again</a>
     </div>
 
     <script>
@@ -387,6 +503,16 @@
             const sigEl = document.getElementById('result-signal');
             sigEl.innerText = isBuy ? "BUY 📈" : "SELL 📉";
             sigEl.className = isBuy ? "result-signal buy" : "result-signal sell";
+
+            // Обновление данных для блока Signal Intelligence
+            document.getElementById('info-trend').innerText = isBuy ? "Bullish" : "Bearish";
+            document.getElementById('info-trend').style.color = isBuy ? "var(--green)" : "var(--red)";
+            
+            const infoSignal = document.getElementById('info-signal');
+            infoSignal.innerText = isBuy ? "BUY" : "SELL";
+            infoSignal.style.color = isBuy ? "var(--green)" : "var(--red)";
+            
+            document.getElementById('info-exp').innerText = exp + " MIN";
 
             setTimeout(() => renderMainChart(isBuy), 100);
         }
