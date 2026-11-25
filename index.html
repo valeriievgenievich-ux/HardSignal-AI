@@ -493,13 +493,13 @@
         let mainChartInstance = null;
         let liveActivityInterval = null;
         
-        // === НАСТОЯЩИЕ СВЕЧНЫЕ ГРАФИКИ (CANDLESTICK) ===
+        // === НАСТОЯЩИЕ СВЕЧНЫЕ ГРАФИКИ (CANDLESTICK) С ПЛАВНЫМ ДВИЖЕНИЕМ ===
         let miniCharts = {};
         const chartConfigs = [
-            { id: 'chart-trend', color: '#ffd700', volatility: 2.5 },    // Gold
-            { id: 'chart-support', color: '#8a2be2', volatility: 1.8 },  // Purple
-            { id: 'chart-momentum', color: '#00ff88', volatility: 3.5 }, // Green
-            { id: 'chart-volume', color: '#3b82f6', volatility: 2.8 }    // Blue
+            { id: 'chart-trend', color: '#ffd700', volatility: 0.8 },
+            { id: 'chart-support', color: '#8a2be2', volatility: 0.5 },
+            { id: 'chart-momentum', color: '#00ff88', volatility: 1.2 },
+            { id: 'chart-volume', color: '#3b82f6', volatility: 1.0 }
         ];
 
         function initCandleCharts() {
@@ -509,26 +509,26 @@
                 
                 let initialData = [];
                 let currentPrice = 50;
-                for(let i=0; i<15; i++) {
+                for(let i=0; i<30; i++) {
                     let open = currentPrice;
-                    let close = open + (Math.random() - 0.5) * cfg.volatility * 2;
-                    let high = Math.max(open, close) + Math.random() * cfg.volatility;
-                    let low = Math.min(open, close) - Math.random() * cfg.volatility;
-                    // Финансовый формат данных: {x: время, o, h, l, c}
+                    let change = (Math.random() - 0.5) * cfg.volatility;
+                    let close = open + change;
+                    let high = Math.max(open, close) + Math.random() * (cfg.volatility * 0.8);
+                    let low = Math.min(open, close) - Math.random() * (cfg.volatility * 0.8);
                     initialData.push({ x: i, o: open, h: high, l: low, c: close });
                     currentPrice = close;
                 }
 
                 const ctx = el.getContext('2d');
                 miniCharts[cfg.id] = new Chart(ctx, {
-                    type: 'candlestick', // Используем тип "свечи"
+                    type: 'candlestick',
                     data: {
                         datasets: [{
                             label: 'Price',
                             data: initialData,
                             color: {
-                                up: cfg.color,     // Цвет растущей свечи
-                                down: cfg.color,   // Цвет падающей свечи (можно сделать бледнее)
+                                up: cfg.color,
+                                down: cfg.color, 
                                 unchanged: cfg.color
                             },
                             borderColor: {
@@ -559,28 +559,28 @@
                     }
                 });
 
-                // Анимация: удаляем первую свечу, добавляем новую
                 setInterval(() => {
                     const chart = miniCharts[cfg.id];
                     if(!chart) return;
                     
                     let data = chart.data.datasets[0].data;
-                    data.shift(); // Удаляем старейшую
+                    data.shift();
                     
                     let lastCandle = data[data.length - 1];
                     let open = lastCandle.c;
-                    let close = open + (Math.random() - 0.5) * cfg.volatility * 2;
-                    let high = Math.max(open, close) + Math.random() * cfg.volatility;
-                    let low = Math.min(open, close) - Math.random() * cfg.volatility;
+                    let change = (Math.random() - 0.5) * cfg.volatility;
+                    let close = open + change;
                     
-                    // Добавляем новую с временной меткой
+                    let high = Math.max(open, close) + Math.random() * (cfg.volatility * 0.8);
+                    let low = Math.min(open, close) - Math.random() * (cfg.volatility * 0.8);
+                    
                     data.push({ 
                         x: lastCandle.x + 1, 
                         o: open, h: high, l: low, c: close 
                     });
                     
                     chart.update('none');
-                }, 600); // Новая свеча каждые 600 мс
+                }, 1500); // Медленное обновление для плавности
             });
         }
 
