@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HardSignal AI Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Подключаем Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
@@ -25,7 +24,6 @@
             overflow: hidden;
         }
         
-        /* Шапка */
         .header { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .ai-logo {
             width: 40px; height: 40px; background: linear-gradient(135deg, #00ff88, #0088ff);
@@ -35,7 +33,6 @@
         @keyframes pulse { 0% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); } 50% { box-shadow: 0 0 25px rgba(0, 255, 136, 0.8); } 100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); } }
         .title { font-size: 22px; font-weight: bold; letter-spacing: 1px; }
         
-        /* Сетка карточек */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .card {
             background: var(--card-bg); border: 1px solid #2a3441; border-radius: 12px; padding: 12px;
@@ -45,7 +42,38 @@
         .card.active::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--green); }
         .card-title { font-size: 11px; color: var(--muted); text-transform: uppercase; }
         .card-value { font-size: 14px; font-weight: bold; }
-        
+
+        /* --- АНИМИРОВАННЫЙ РАДАР --- */
+        .radar-container {
+            flex-grow: 1; /* Занимает всё свободное место */
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .radar {
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 255, 136, 0.2);
+            position: relative;
+            background: radial-gradient(circle, rgba(0,255,136,0.05) 0%, transparent 70%);
+        }
+        .radar::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%; border: 1px solid rgba(0, 255, 136, 0.1);
+            transform: scale(0.5);
+        }
+        .radar::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 70%, rgba(0, 255, 136, 0.4) 100%);
+            animation: spin 2s linear infinite;
+        }
+        .radar-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 10px; height: 10px; background: var(--green); border-radius: 50%;
+            box-shadow: 0 0 10px var(--green);
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
         /* Статус */
         .status-container { background: var(--card-bg); border-radius: 12px; padding: 15px; text-align: center; margin-top: auto; }
         .status-text { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
@@ -69,10 +97,9 @@
         .signal.sell { color: var(--red); text-shadow: 0 0 20px rgba(255,51,102,0.3); }
         .exp { font-size: 14px; color: var(--muted); }
 
-        /* Контейнер для графика */
         #chart-wrapper {
-            width: 100%; height: 300px; position: relative; background: var(--card-bg);
-            border-radius: 12px; padding: 10px; box-sizing: border-box; margin-bottom: 15px;
+            flex-grow: 1; width: 100%; position: relative; background: var(--card-bg);
+            border-radius: 12px; padding: 10px; box-sizing: border-box; margin-bottom: 15px; min-height: 250px;
         }
     </style>
 </head>
@@ -90,6 +117,13 @@
             <div class="card" id="card-resistance"><div class="card-title">Resistance</div><div class="card-value" id="val-resistance">Waiting...</div></div>
             <div class="card" id="card-momentum"><div class="card-title">Momentum</div><div class="card-value" id="val-momentum">Waiting...</div></div>
             <div class="card" id="card-volume"><div class="card-title">Volume</div><div class="card-value" id="val-volume">Waiting...</div></div>
+        </div>
+
+        <!-- РАДАР -->
+        <div class="radar-container">
+            <div class="radar">
+                <div class="radar-center"></div>
+            </div>
         </div>
 
         <div class="status-container">
@@ -117,7 +151,7 @@
         Telegram.WebApp.expand();
 
         const pairs = ["EUR/USD OTC", "GBP/USD OTC", "USD/JPY OTC", "AUD/CAD OTC", "NZD/USD OTC", "USD/CHF OTC", "EUR/GBP OTC", "USD/CAD OTC"];
-        let myChartInstance = null; // Переменная для хранения графика
+        let myChartInstance = null;
         
         function startAnalysis() {
             document.getElementById('startBtn').style.display = 'none';
@@ -159,31 +193,25 @@
             sigEl.innerText = isBuy ? "BUY 📈" : "SELL 📉";
             sigEl.className = isBuy ? "signal buy" : "signal sell";
 
-            // Отрисовываем график
-            renderChart(isBuy);
+            setTimeout(() => renderChart(isBuy), 100);
         }
 
         function renderChart(isBuy) {
             const ctx = document.getElementById('myChart').getContext('2d');
-            
-            // Генерируем данные в виде линии, повторяющей свечи
             const labels = [];
             const dataPoints = [];
             let currentPrice = 1.0850;
 
             for (let i = 0; i < 30; i++) {
                 labels.push('');
-                // Логика: если BUY, то тренд вверх, если SELL - вниз
                 let trendBias = isBuy ? 0.0002 : -0.0002; 
                 let change = (Math.random() - 0.5) * 0.001 + trendBias;
                 currentPrice += change;
                 dataPoints.push(currentPrice);
             }
 
-            // Если график уже был, уничтожаем старый
             if (myChartInstance) { myChartInstance.destroy(); }
 
-            // Цвет линии зависит от сигнала
             const lineColor = isBuy ? '#00ff88' : '#ff3366';
             const bgColor = isBuy ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)';
 
@@ -196,9 +224,9 @@
                         borderColor: lineColor,
                         backgroundColor: bgColor,
                         borderWidth: 2,
-                        pointRadius: 0, // Убираем точки
+                        pointRadius: 0,
                         fill: true,
-                        tension: 0.3 // Плавная линия
+                        tension: 0.3
                     }]
                 },
                 options: {
@@ -206,7 +234,7 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { display: false }, // Скрываем ось X
+                        x: { display: false },
                         y: { 
                             display: true, 
                             position: 'right',
