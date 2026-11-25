@@ -3,88 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HardSignal AI</title>
+    <title>HardSignal AI Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --bg: #0b0e14;
+            --card-bg: #151a23;
+            --green: #00ff88;
+            --red: #ff3366;
+            --text: #e2e8f0;
+            --muted: #64748b;
+        }
         body {
-            background-color: #0e1117; color: white; font-family: sans-serif;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100vh; margin: 0; overflow: hidden;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; padding: 15px;
+            display: flex; flex-direction: column; height: 100vh; box-sizing: border-box;
+            overflow: hidden;
         }
-        .container { text-align: center; padding: 20px; width: 90%; max-width: 400px; }
-        .status { font-size: 18px; margin-bottom: 20px; color: #9ca3af; font-weight: bold; }
+        
+        /* Шапка с ИИ */
+        .header {
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; margin-bottom: 20px;
+        }
+        .ai-logo {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #00ff88, #0088ff);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(0, 255, 136, 0.8); }
+            100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
+        }
+        .title { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+        
+        /* Сетка карточек */
+        .grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid #2a3441;
+            border-radius: 12px; padding: 12px;
+            display: flex; flex-direction: column; gap: 8px;
+            position: relative; overflow: hidden;
+        }
+        .card.active {
+            border-color: var(--green);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.1);
+        }
+        .card.active::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: var(--green);
+        }
+        .card-title { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+        .card-value { font-size: 14px; font-weight: bold; }
+        
+        /* Статус и прогресс */
+        .status-container {
+            background: var(--card-bg); border-radius: 12px; padding: 15px;
+            text-align: center; margin-top: auto;
+        }
+        .status-text { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
         .progress-bar {
-            width: 100%; height: 12px; background-color: #1f2329;
-            border-radius: 6px; margin-bottom: 30px; overflow: hidden;
+            width: 100%; height: 6px; background: #2a3441; border-radius: 3px;
+            overflow: hidden; margin-bottom: 15px;
         }
-        .progress { width: 0%; height: 100%; background-color: #00c853; transition: width 0.4s ease; }
-        .result { font-size: 40px; font-weight: 900; display: none; margin-top: 20px; text-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .buy { color: #00c853; }
-        .sell { color: #ff3d00; }
+        .progress { width: 0%; height: 100%; background: var(--green); transition: width 0.5s ease; }
+        
+        /* Кнопка */
         button {
-            background-color: #00c853; color: #0e1117; border: none;
-            padding: 18px 40px; font-size: 20px; font-weight: bold;
-            border-radius: 12px; cursor: pointer; width: 100%;
-            box-shadow: 0 4px 15px rgba(0, 200, 83, 0.3);
+            width: 100%; padding: 15px; border: none; border-radius: 10px;
+            background: var(--green); color: #000; font-size: 16px; font-weight: bold;
+            cursor: pointer; transition: 0.2s;
         }
         button:active { transform: scale(0.98); }
-        .check { color: #00c853; font-size: 20px; margin-right: 10px; }
-        .step-text { text-align: left; margin-bottom: 15px; display: none; font-size: 14px; color: #9ca3af;}
+        
+        /* Результат */
+        .result-box {
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .signal { font-size: 48px; font-weight: 900; margin-bottom: 10px; }
+        .signal.buy { color: var(--green); text-shadow: 0 0 20px rgba(0,255,136,0.5); }
+        .signal.sell { color: var(--red); text-shadow: 0 0 20px rgba(255,51,102,0.5); }
+        .pair { font-size: 24px; color: var(--text); font-weight: bold; margin-bottom: 5px;}
+        .exp { font-size: 14px; color: var(--muted); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="status" id="status">Ready to analyze</div>
-        <div class="progress-bar">
-            <div class="progress" id="progress"></div>
-        </div>
-        
-        <div id="steps-container">
-            <div class="step-text" id="step1"><span class="check">✓</span> Analyzing trend...</div>
-            <div class="step-text" id="step2"><span class="check">✓</span> Checking resistance...</div>
-            <div class="step-text" id="step3"><span class="check">✓</span> Analyzing momentum...</div>
-            <div class="step-text" id="step4"><span class="check">✓</span> Generating signal...</div>
+
+    <div id="analysis-screen">
+        <div class="header">
+            <div class="ai-logo">🤖</div>
+            <div class="title">GPT-6.0 Terminal</div>
         </div>
 
-        <div class="result" id="result"></div>
-        <button id="startBtn" onclick="startAnalysis()">🚀 START ANALYSIS</button>
+        <div class="grid">
+            <div class="card" id="card-trend">
+                <div class="card-title">Trend Analysis</div>
+                <div class="card-value" id="val-trend">Waiting...</div>
+            </div>
+            <div class="card" id="card-resistance">
+                <div class="card-title">Resistance</div>
+                <div class="card-value" id="val-resistance">Waiting...</div>
+            </div>
+            <div class="card" id="card-momentum">
+                <div class="card-title">Momentum</div>
+                <div class="card-value" id="val-momentum">Waiting...</div>
+            </div>
+            <div class="card" id="card-volume">
+                <div class="card-title">Volume</div>
+                <div class="card-value" id="val-volume">Waiting...</div>
+            </div>
+        </div>
+
+        <div class="status-container">
+            <div class="status-text" id="status">System Ready</div>
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <button id="startBtn" onclick="startAnalysis()">🚀 START ANALYSIS</button>
+        </div>
+    </div>
+
+    <!-- Экран с результатом (скрыт по умолчанию) -->
+    <div class="result-box" id="result-screen">
+        <div class="pair" id="result-pair">EUR/USD OTC</div>
+        <div class="signal" id="result-signal">BUY</div>
+        <div class="exp" id="result-exp">Expiration: 3 min</div>
     </div>
 
     <script>
         Telegram.WebApp.ready();
-        Telegram.WebApp.expand(); // Разворачиваем на весь экран
+        Telegram.WebApp.expand();
 
+        const pairs = ["EUR/USD OTC", "GBP/USD OTC", "USD/JPY OTC", "AUD/CAD OTC", "NZD/USD OTC", "USD/CHF OTC"];
+        
         function startAnalysis() {
-            const status = document.getElementById('status');
-            const progress = document.getElementById('progress');
-            const result = document.getElementById('result');
-            const btn = document.getElementById('startBtn');
-            const steps = ['step1', 'step2', 'step3', 'step4'];
-
-            btn.style.display = 'none';
-            result.style.display = 'none';
-            progress.style.width = '0%';
-            steps.forEach(s => document.getElementById(s).style.display = 'none');
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('status').innerText = "Initializing neural network...";
+            
+            const cards = ['card-trend', 'card-resistance', 'card-momentum', 'card-volume'];
+            const vals = ['val-trend', 'val-resistance', 'val-momentum', 'val-volume'];
+            const statuses = [
+                "Analyzing trend...", "Checking resistance...", 
+                "Analyzing momentum...", "Processing volume..."
+            ];
+            const values = ["BULLISH", "SUPPORT", "STRONG", "HIGH"];
 
             let i = 0;
             const interval = setInterval(() => {
-                if (i < steps.length) {
-                    // Показываем текст и закрашиваем прогресс
-                    document.getElementById(steps[i]).style.display = 'block';
-                    status.innerText = "AI is thinking...";
-                    progress.style.width = ((i + 1) / steps.length) * 100 + '%';
+                if (i < cards.length) {
+                    // Активируем карточку
+                    document.getElementById(cards[i]).classList.add('active');
+                    document.getElementById(vals[i]).innerText = values[i];
+                    document.getElementById(vals[i]).style.color = "var(--green)";
+                    
+                    // Обновляем статус и прогресс
+                    document.getElementById('status').innerText = statuses[i];
+                    document.getElementById('progress').style.width = ((i + 1) / cards.length) * 100 + '%';
                     i++;
                 } else {
                     clearInterval(interval);
-                    status.innerText = "Analysis Complete!";
+                    document.getElementById('status').innerText = "Signal generated!";
                     
-                    // Рандомный результат
-                    const isBuy = Math.random() > 0.5;
-                    result.innerText = isBuy ? "BUY 📈" : "SELL 📉";
-                    result.className = isBuy ? "result buy" : "result sell";
-                    result.style.display = "block";
+                    setTimeout(() => {
+                        // Скрываем экран анализа и показываем результат
+                        document.getElementById('analysis-screen').style.display = 'none';
+                        document.getElementById('result-screen').style.display = 'flex';
+                        
+                        // Рандомный результат
+                        const isBuy = Math.random() > 0.5;
+                        const randomPair = pairs[Math.floor(Math.random() * pairs.length)];
+                        
+                        document.getElementById('result-pair').innerText = randomPair;
+                        const sigEl = document.getElementById('result-signal');
+                        sigEl.innerText = isBuy ? "BUY 📈" : "SELL 📉";
+                        sigEl.className = isBuy ? "signal buy" : "signal sell";
+                        
+                    }, 1000);
                 }
-            }, 1200); // Задержка между шагами
+            }, 1500); // Каждые 1.5 секунды
         }
     </script>
 </body>
