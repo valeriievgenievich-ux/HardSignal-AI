@@ -592,3 +592,110 @@
                 }
             }, 1500);
         }
+
+        // ФУНКЦИЯ ДЛЯ ГЕНЕРАЦИИ LIVE ACTIVITY (в пределах последних 3 минут от текущего UTC)
+        function generateLiveActivity() {
+            const list = document.getElementById('activity-list');
+            if (!list) return;
+            list.innerHTML = ''; // Очищаем старые записи
+
+            const numRecords = 5; // Количество записей
+            const now = new Date();
+            const nowUtcMs = now.getTime();
+
+            let records = [];
+            for (let i = 0; i < numRecords; i++) {
+                const secondsAgo = Math.floor(Math.random() * 180);
+                const timestamp = nowUtcMs - (secondsAgo * 1000);
+                const date = new Date(timestamp);
+                const timeStr = date.toISOString().substr(11, 5); // ЧЧ:ММ
+                
+                const randomPair = pairs[Math.floor(Math.random() * pairs.length)];
+                const isBuy = Math.random() > 0.5;
+                
+                records.push({
+                    timeMs: timestamp,
+                    timeStr: timeStr,
+                    pair: randomPair,
+                    isBuy: isBuy
+                });
+            }
+
+            records.sort((a, b) => b.timeMs - a.timeMs);
+
+            records.forEach(rec => {
+                const row = document.createElement('div');
+                row.className = 'activity-item';
+                row.innerHTML = `
+                    <span class="activity-time">${rec.timeStr}</span>
+                    <span>${rec.pair}</span>
+                    <span class="activity-tag ${rec.isBuy ? 'buy' : 'sell'}">${rec.isBuy ? 'BUY' : 'SELL'}</span>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        function showResult() {
+            document.getElementById('app-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'flex';
+            
+            const isBuy = Math.random() > 0.5;
+            const randomPair = pairs[Math.floor(Math.random() * pairs.length)];
+            
+            const expOptions = ["5 sec", "15 sec", "30 sec", "1 min"];
+            const exp = expOptions[Math.floor(Math.random() * expOptions.length)];
+            
+            document.getElementById('result-pair').innerText = randomPair;
+            document.getElementById('result-exp').innerText = `Expiration: ${exp}`;
+            const sigEl = document.getElementById('result-signal');
+            sigEl.innerText = isBuy ? "BUY 📈" : "SELL 📉";
+            sigEl.className = isBuy ? "result-signal buy" : "result-signal sell";
+
+            document.getElementById('info-trend').innerText = isBuy ? "Bullish" : "Bearish";
+            document.getElementById('info-trend').style.color = isBuy ? "var(--green)" : "var(--red)";
+            
+            const infoSignal = document.getElementById('info-signal');
+            infoSignal.innerText = isBuy ? "BUY" : "SELL";
+            infoSignal.style.color = isBuy ? "var(--green)" : "var(--red)";
+            
+            document.getElementById('info-exp').innerText = exp.toUpperCase();
+
+            // Меняем цвет AI CORE под сигнал (правда, экран результата теперь отдельный, но на всякий случай)
+            setCoreState(isBuy ? 'buy' : 'sell');
+
+            // Запускаем Live Activity
+            generateLiveActivity();
+            if (liveActivityInterval) clearInterval(liveActivityInterval);
+            liveActivityInterval = setInterval(generateLiveActivity, 5000);
+
+            setTimeout(() => renderMainChart(isBuy), 100);
+        }
+
+        function renderMainChart(isBuy) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            const labels = [];
+            const dataPoints = [];
+            let currentPrice = 1.0850;
+
+            for (let i = 0; i < 30; i++) {
+                labels.push('');
+                let trendBias = isBuy ? 0.0002 : -0.0002; 
+                let change = (Math.random() - 0.5) * 0.001 + trendBias;
+                currentPrice += change;
+                dataPoints.push(currentPrice);
+            }
+
+            if (mainChartInstance) { mainChartInstance.destroy(); }
+
+            const lineColor = isBuy ? '#00ff88' : '#ff3366';
+            const bgColor = isBuy ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)';
+
+            mainChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels, datasets: [{ data: dataPoints, borderColor: lineColor, backgroundColor: bgColor, borderWidth: 2, pointRadius: 0, fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: true, position: 'right', grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8b8b9f', font: { size: 10 } } } } }
+            });
+        }
+    </script>
+</body>
+</html>
