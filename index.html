@@ -184,7 +184,7 @@
         .card-header { display: flex; justify-content: space-between; align-items: center; width: 100%;}
         .card-title { font-size: 9px; color: var(--muted); font-weight: 600; }
         .card-value { font-size: 9px; font-weight: 800; color: var(--gold); text-align: right; }
-        .mini-chart { height: 30px; width: 100%; margin-top: 2px; position: relative; }
+        .mini-chart { height: 40px; width: 100%; margin-top: 2px; position: relative; }
 
         /* Блок подключения */
         .connect-panel {
@@ -458,7 +458,7 @@
                 if (data.subscribed && data.registered && data.deposited) {
                     document.getElementById('lock-screen').style.display = 'none';
                     document.getElementById('app-screen').style.display = 'flex';
-                    initMiniCharts();
+                    initCandleCharts();
                 } else {
                     document.getElementById('lock-screen').style.display = 'flex';
                     document.getElementById('app-screen').style.display = 'none';
@@ -492,76 +492,125 @@
         let mainChartInstance = null;
         let liveActivityInterval = null;
         
-        // === ДИНАМИЧЕСКИЕ ГРАФИКИ ===
+        // === СВЕЧНЫЕ ГРАФИКИ (CANDLESTICK) ===
         let miniCharts = {};
         const chartConfigs = [
-            { id: 'chart-trend', color: 'rgba(255, 215, 0, 0.5)', volatility: 4.5 },
-            { id: 'chart-support', color: 'rgba(138, 43, 226, 0.6)', volatility: 3.0 },
-            { id: 'chart-momentum', color: 'rgba(0, 255, 136, 0.5)', volatility: 6.0 },
-            { id: 'chart-volume', color: 'rgba(59, 130, 246, 0.5)', volatility: 5.0 }
+            { id: 'chart-trend', color: '255, 215, 0', volatility: 4.5 },    // Gold
+            { id: 'chart-support', color: '138, 43, 226', volatility: 3.0 }, // Purple
+            { id: 'chart-momentum', color: '0, 255, 136', volatility: 6.0 }, // Green
+            { id: 'chart-volume', color: '59, 130, 246', volatility: 5.0 }   // Blue
         ];
 
-        function initMiniCharts() {
+        function initCandleCharts() {
             chartConfigs.forEach(cfg => {
                 const el = document.getElementById(cfg.id);
                 if (!el) return;
                 
-                // Генерируем начальные данные, чтобы график сразу был волнообразным
-                let initialData = [];
-                let currentVal = 50;
-                for(let i=0; i<20; i++) {
-                    currentVal += (Math.random() - 0.5) * cfg.volatility * 5;
-                    if (currentVal > 85) currentVal = 85;
-                    if (currentVal < 15) currentVal = 15;
-                    initialData.push(currentVal);
+                // Генерируем начальные данные для свечей
+                let initialCandles = [];
+                let currentPrice = 50;
+                for(let i=0; i<15; i++) {
+                    let open = currentPrice;
+                    let close = open + (Math.random() - 0.5) * cfg.volatility * 2;
+                    let high = Math.max(open, close) + Math.random() * cfg.volatility;
+                    let low = Math.min(open, close) - Math.random() * cfg.volatility;
+                    initialCandles.push({ o: open, c: close, h: high, l: low });
+                    currentPrice = close;
                 }
 
                 const ctx = el.getContext('2d');
                 miniCharts[cfg.id] = new Chart(ctx, {
-                    type: 'line',
-                    data: { 
-                        labels: initialData.map((_, i) => i), 
-                        datasets: [{ 
-                            data: initialData, 
-                            borderColor: cfg.color, 
-                            borderWidth: 1.5, 
-                            pointRadius: 0, 
-                            fill: false, 
-                            tension: 0.4 // Плавные изгибы
-                        }] 
+                    type: 'bar',
+                    data: {
+                        labels: initialCandles.map((_, i) => i),
+                        datasets: [{
+                            label: 'Candles',
+                            data: initialCandles.map(c => ({
+                                x: 0, // Заглушка
+                                y: [Math.min(c.o, c.c), Math.max(c.o, c.c)], // Тело свечи
+                                o: c.o, c: c.c, h: c.h, l: c.l
+                            })),
+                            backgroundColor: initialCandles.map(c => c.c >= c.o ? `rgba(${cfg.color}, 0.8)` : `rgba(${cfg.color}, 0.2)`),
+                            borderColor: initialCandles.map(c => c.c >= c.o ? `rgba(${cfg.color}, 1)` : `rgba(${cfg.color}, 0.5)`),
+                            borderWidth: 1,
+                            barPercentage: 0.6
+                        }]
                     },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false, 
-                        plugins: { legend: { display: false } }, 
-                        scales: { 
-                            x: { display: false }, 
-                            y: { display: false } // Убрали жесткие лимиты, чтобы график "дышал"
-                        }, 
-                        animation: false 
-                    }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false }
+                        },
+                        animation: false
+                    },
+                    // Кастомный плагин для отрисовки теней и тел свечей
+                    plugins: [{
+                        id: 'candlePlugin',
+                        afterDatasetsDraw: function(chart) {
+                            const ctx = chart.ctx;
+                            const meta = chart.getDatasetMeta(0);
+                            const yScale = chart.scales.y;
+                            
+                            meta.data.forEach((bar, index) => {
+                                const candle = chart.data.datasets[0].data[index];
+                                if (!candle || !candle.o) return;
+                                
+                                const x = bar.x;
+                                const yHigh = yScale.getPixelForValue(candle.h);
+                                const yLow = yScale.getPixelForValue(candle.l);
+                                const isGreen = candle.c >= candle.o;
+                                
+                                // Рисуем тень (фитиль)
+                                ctx.beginPath();
+                                ctx.strokeStyle = isGreen ? `rgba(${cfg.color}, 0.8)` : `rgba(${cfg.color}, 0.5)`;
+                                ctx.lineWidth = 1.5;
+                                ctx.moveTo(x, yHigh);
+                                ctx.lineTo(x, yLow);
+                                ctx.stroke();
+                                
+                                // Тело свечи уже нарисовано Chart.js (bar), просто корректируем цвет
+                                // (Chart.js рисует прямоугольник от min до max, что нам и нужно)
+                            });
+                        }
+                    }]
                 });
 
-                // Анимация движения
+                // Анимация добавления новых свечей
                 setInterval(() => {
                     const chart = miniCharts[cfg.id];
                     if(!chart) return;
+                    
                     let data = chart.data.datasets[0].data;
+                    let bgColors = chart.data.datasets[0].backgroundColor;
+                    let borderColors = chart.data.datasets[0].borderColor;
                     
-                    data.shift(); // Удаляем самую левую точку
+                    // Удаляем первую свечу
+                    data.shift();
+                    bgColors.shift();
+                    borderColors.shift();
                     
-                    let last = data[data.length - 1];
-                    // Вычисляем новую точку с учетом волатильности
-                    let change = (Math.random() - 0.5) * cfg.volatility * 2;
-                    let newVal = last + change;
+                    // Создаем новую
+                    let lastCandle = data[data.length - 1];
+                    let open = lastCandle.c;
+                    let close = open + (Math.random() - 0.5) * cfg.volatility * 2;
+                    let high = Math.max(open, close) + Math.random() * cfg.volatility;
+                    let low = Math.min(open, close) - Math.random() * cfg.volatility;
                     
-                    // Мягкие границы, чтобы график не улетел слишком высоко/низко
-                    if (newVal > 90) newVal = 90;
-                    if (newVal < 10) newVal = 10;
+                    const newCandle = {
+                        x: 0,
+                        y: [Math.min(open, close), Math.max(open, close)],
+                        o: open, c: close, h: high, l: low
+                    };
                     
-                    data.push(newVal);
-                    chart.update('none'); // Обновляем без анимации, чтобы было плавное течение
-                }, 300); 
+                    data.push(newCandle);
+                    bgColors.push(close >= open ? `rgba(${cfg.color}, 0.8)` : `rgba(${cfg.color}, 0.2)`);
+                    borderColors.push(close >= open ? `rgba(${cfg.color}, 1)` : `rgba(${cfg.color}, 0.5)`);
+                    
+                    chart.update('none');
+                }, 400); // Новая свеча каждые 400 мс
             });
         }
 
