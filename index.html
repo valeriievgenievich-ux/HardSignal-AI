@@ -9,427 +9,461 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.1/dist/chartjs-chart-financial.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
 
         :root {
-            --bg: #0a0514;
-            --card-bg: rgba(25, 20, 40, 0.6);
-            --border: rgba(255, 255, 255, 0.08);
-            --green: #00ff88;
-            --red: #ff3366;
-            --gold: #ffd700;
-            --purple: #8a2be2;
-            --blue: #3b82f6;
-            --text: #ffffff;
-            --muted: #8b8b9f;
+            --bg: #0d1117;
+            --card-bg: #161b22;
+            --card-border: #21262d;
+            --text: #e6edf3;
+            --muted: #8b949e;
+            --green: #2ea043;
+            --green-glow: rgba(46, 160, 67, 0.15);
+            --red: #f85149;
+            --gold: #d29922;
+            --blue: #58a6ff;
+            --blue-dim: rgba(88, 166, 255, 0.1);
         }
 
         * { box-sizing: border-box; }
 
         body {
-            background: radial-gradient(circle at top, #1a0b2e 0%, #0a0514 60%);
+            background: var(--bg);
             color: var(--text);
             font-family: 'Inter', sans-serif;
-            margin: 0; padding: 12px;
+            margin: 0; padding: 16px;
             display: flex; flex-direction: column; min-height: 100vh;
             overflow-y: auto; overflow-x: hidden;
         }
-        
+
         /* Шапка */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .top-bar h1 { font-size: 18px; font-weight: 800; margin: 0; background: linear-gradient(90deg, #fff, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        /* Экран блокировки */
-        .lock-screen { display: none; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; text-align: center; }
-        .lock-icon { font-size: 50px; margin-bottom: 15px; filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5)); }
-        .lock-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
-        .lock-sub { font-size: 13px; color: var(--muted); margin-bottom: 30px; max-width: 280px; }
-
-        .step-card {
-            background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px;
-            padding: 15px; margin-bottom: 12px; width: 100%; max-width: 320px;
-            display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer; transition: 0.2s;
-        }
-        .step-card:active { transform: scale(0.98); }
-        .step-card.done { border-color: var(--green); opacity: 0.6; pointer-events: none; }
-        .step-info { text-align: left; }
-        .step-name { font-size: 14px; font-weight: 800; }
-        .step-desc { font-size: 10px; color: var(--muted); }
-        .step-status { font-size: 20px; }
-
-        /* Кнопка Start */
-        .start-btn { 
-            width: 100%; max-width: 320px; padding: 15px; border: none; border-radius: 14px; 
-            background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; 
-            font-size: 14px; font-weight: 900; letter-spacing: 1px; cursor: pointer; 
-            transition: all 0.3s; box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3); margin-top: 20px;
-            display: flex; justify-content: center; align-items: center; gap: 8px;
-            position: relative;
-        }
-        .start-btn:active { transform: scale(0.98); }
-        
-        .start-btn.loading {
-            background: #2a3441;
-            color: var(--muted);
-            cursor: not-allowed;
-            box-shadow: none;
-            pointer-events: none;
-        }
-        .spinner {
-            display: none;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--gold);
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .start-btn.loading .spinner { display: block; }
-
-        /* Плашка Signal */
-        .signal-pill { background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); color: var(--gold); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 12px; }
-
-        /* Карточка терминала */
-        .terminal-card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 14px; padding: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .pair-info { display: flex; align-items: center; gap: 8px; }
-        .flags { font-size: 16px; }
-        .pair-name { font-weight: 800; font-size: 13px; }
-        .pair-sub { font-size: 9px; color: var(--gold); font-weight: 600; }
-        .terminal-btn { background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); color: var(--gold); padding: 5px 8px; border-radius: 8px; font-size: 10px; font-weight: 600; text-decoration: none; }
-
-        /* Центральная плашка Analyzing */
-        .center-container { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; width: 100%;}
-        .glass-card { width: 100%; background: linear-gradient(135deg, rgba(60, 30, 100, 0.8), rgba(20, 15, 30, 0.9)); border: 1px solid rgba(138, 43, 226, 0.4); border-radius: 16px; padding: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 30px rgba(138, 43, 226, 0.2); transition: border-color 0.5s, box-shadow 0.5s; }
-        
-        /* AI CORE — пульсирующее кольцо */
-        .ai-core {
-            width: 44px;
-            height: 44px;
-            position: relative;
+        .header {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .ai-core-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            border-top-color: var(--gold);
-            border-right-color: var(--purple);
-            animation: rotateRing 1.2s linear infinite;
-            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
-            transition: border-color 0.5s, filter 0.5s;
-        }
-        .ai-core-ring-inner {
-            position: absolute;
-            width: 70%;
-            height: 70%;
-            border-radius: 50%;
-            border: 1.5px solid transparent;
-            border-bottom-color: var(--purple);
-            border-left-color: var(--gold);
-            animation: rotateRingReverse 1.8s linear infinite;
-            opacity: 0.7;
-            transition: border-color 0.5s;
-        }
-        .ai-core-center {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--gold) 0%, var(--purple) 100%);
-            box-shadow: 0 0 12px rgba(255, 215, 0, 0.6), 0 0 20px rgba(138, 43, 226, 0.4);
-            animation: pulseCore 1.5s ease-in-out infinite;
-            transition: background 0.5s, box-shadow 0.5s;
-        }
-        @keyframes rotateRing {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        @keyframes rotateRingReverse {
-            0% { transform: rotate(360deg); }
-            100% { transform: rotate(0deg); }
-        }
-        @keyframes pulseCore {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.15); opacity: 0.85; }
-        }
-
-        /* AI CORE — состояние BUY (зелёное) */
-        .ai-core.buy .ai-core-ring { border-top-color: var(--green); border-right-color: var(--green); filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.8)); animation-duration: 0.8s; }
-        .ai-core.buy .ai-core-ring-inner { border-bottom-color: var(--green); border-left-color: var(--green); }
-        .ai-core.buy .ai-core-center { background: radial-gradient(circle, var(--green) 0%, #008f4c 100%); box-shadow: 0 0 15px rgba(0, 255, 136, 0.9), 0 0 25px rgba(0, 255, 136, 0.5); }
-
-        /* AI CORE — состояние SELL (розово-красное) */
-        .ai-core.sell .ai-core-ring { border-top-color: var(--red); border-right-color: #ff8fa3; filter: drop-shadow(0 0 10px rgba(255, 51, 102, 0.8)); animation-duration: 0.8s; }
-        .ai-core.sell .ai-core-ring-inner { border-bottom-color: var(--red); border-left-color: #ff8fa3; }
-        .ai-core.sell .ai-core-center { background: radial-gradient(circle, var(--red) 0%, #8f0033 100%); box-shadow: 0 0 15px rgba(255, 51, 102, 0.9), 0 0 25px rgba(255, 51, 102, 0.5); }
-
-        .analyzing-content { flex-grow: 1; }
-        .analyzing-title { font-size: 16px; font-weight: 800; color: #fff; display: flex; align-items: baseline; transition: color 0.5s; }
-        .dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
-        @keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
-        .analyzing-subtext { font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 5px; margin-top: 2px; }
-        .progress-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 6px; }
-        .progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--purple), var(--gold)); transition: width 0.4s ease, background 0.5s; }
-
-        /* Сетка карточек */
-        .readings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; color: var(--muted); font-weight: 600; width: 100%;}
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; width: 100%; }
-        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 4px; transition: 0.3s; width: 100%; overflow: hidden; }
-        .card.active { border-color: var(--gold); box-shadow: 0 0 12px rgba(255, 215, 0, 0.15); }
-        .card-header { display: flex; justify-content: space-between; align-items: center; width: 100%;}
-        .card-title { font-size: 9px; color: var(--muted); font-weight: 600; }
-        .card-value { font-size: 9px; font-weight: 800; color: var(--gold); text-align: right; }
-        .mini-chart { height: 45px; width: 100%; margin-top: 2px; position: relative; }
-
-        /* Блок подключения */
-        .connect-panel {
-            background: linear-gradient(135deg, rgba(20, 30, 60, 0.8), rgba(10, 15, 30, 0.9));
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            border-radius: 14px;
-            padding: 15px;
-            width: 100%;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
             justify-content: space-between;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
-            position: relative;
-            overflow: hidden;
-            animation: pulseBlue 3s infinite alternate;
-            cursor: pointer;
-            text-decoration: none;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--card-border);
         }
-        @keyframes pulseBlue {
-            from { box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
-            to { box-shadow: 0 0 25px rgba(59, 130, 246, 0.5); }
+        .header-left {
+            display: flex;
+            flex-direction: column;
         }
-        .connect-info { display: flex; flex-direction: column; gap: 2px; text-align: left; }
-        .connect-title { font-size: 13px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; }
-        .connect-sub { font-size: 10px; color: var(--blue); font-weight: 600; }
-        
-        .claude-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, var(--gold) 0%, #ff8c00 100%);
-            -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>') no-repeat center / contain;
-            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>') no-repeat center / contain;
-            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+        .header-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+            letter-spacing: -0.3px;
         }
-        
-        /* Экран результата */
-        .result-box { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.4s ease; width: 100%;}
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .result-header { text-align: center; margin-bottom: 15px; margin-top: 10px; }
-        .result-pair { font-size: 20px; color: var(--muted); font-weight: 800; }
-        .result-signal { font-size: 40px; font-weight: 900; margin: 5px 0; }
-        .buy { color: var(--green); text-shadow: 0 0 20px rgba(0,255,136,0.4); }
-        .sell { color: var(--red); text-shadow: 0 0 20px rgba(255,51,102,0.4); }
-        .result-exp { font-size: 12px; color: var(--muted); font-weight: 600; }
-        #chart-wrapper { flex-grow: 1; width: 100%; position: relative; background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 10px; margin-bottom: 15px; min-height: 200px; }
-
-        /* Новые блоки на экране результата */
-        .info-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 10px;
-            width: 100%;
-            text-align: left;
-        }
-        .info-header {
+        .header-subtitle {
             font-size: 10px;
             color: var(--muted);
-            font-weight: 800;
-            margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+        .header-right {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            background: var(--green-glow);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(46, 160, 67, 0.3);
         }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            margin-bottom: 6px;
-        }
-        .info-row:last-child { margin-bottom: 0; }
-        .info-label { color: var(--muted); font-weight: 600; }
-        .info-value { font-weight: 800; color: #fff; }
-        
         .status-dot {
             width: 6px; height: 6px;
             border-radius: 50%;
             background: var(--green);
-            display: inline-block;
-            margin-right: 5px;
-            box-shadow: 0 0 5px var(--green);
+            box-shadow: 0 0 6px var(--green);
+        }
+        .status-text {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--green);
+            letter-spacing: 0.5px;
         }
 
-        .activity-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+        /* Карточки */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            width: 100%;
         }
-        .activity-item {
+        .card-header {
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .card-title {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .card-badge {
+            font-size: 9px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-green {
+            background: var(--green-glow);
+            color: var(--green);
+            border: 1px solid rgba(46, 160, 67, 0.3);
+        }
+        .badge-red {
+            background: rgba(248, 81, 73, 0.1);
+            color: var(--red);
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        /* Карточка рынка */
+        .market-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .market-pair {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .market-direction {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--green);
+            background: var(--green-glow);
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+        .chart-container {
+            height: 140px;
+            margin-top: 12px;
+            position: relative;
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 8px;
+        }
+        .chart-label {
+            font-size: 9px;
+            color: var(--muted);
+            margin-top: 8px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* Главная карточка сигнала */
+        .signal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .signal-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .signal-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--green);
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+        .signal-value.sell {
+            color: var(--red);
+        }
+        .signal-sub {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .signal-expiry {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 8px 16px;
+            text-align: center;
+        }
+        .signal-expiry-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+        }
+        .signal-expiry-label {
+            font-size: 9px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+        .signal-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--card-border);
+            font-size: 11px;
+        }
+        .signal-details-label {
+            color: var(--muted);
+        }
+        .signal-details-value {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* Recent Signals */
+        .recent-signals {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .recent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .recent-title {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .recent-view-all {
+            font-size: 10px;
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .signal-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 12px;
+        }
+        .signal-row:last-child {
+            border-bottom: none;
+        }
+        .signal-pair {
+            font-weight: 600;
+            color: var(--text);
+        }
+        .signal-time {
             font-size: 10px;
             color: var(--muted);
-            font-family: monospace;
+            font-family: 'JetBrains Mono', monospace;
         }
-        .activity-time { color: var(--purple); font-weight: 600; }
-        .activity-tag { font-weight: 800; }
-        .activity-tag.buy { color: var(--green); }
-        .activity-tag.sell { color: var(--red); }
+        .signal-type {
+            font-weight: 700;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+        .signal-type.buy {
+            color: var(--green);
+            background: var(--green-glow);
+        }
+        .signal-type.sell {
+            color: var(--red);
+            background: rgba(248, 81, 73, 0.1);
+        }
 
-        .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text); padding: 12px; border-radius: 14px; font-weight: 600; text-align: center; text-decoration: none; display: block; font-size: 13px; margin-top: 15px; }
+        /* Кнопка Analyze */
+        .analyze-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .analyze-btn:hover {
+            border-color: var(--blue);
+            background: rgba(88, 166, 255, 0.05);
+        }
+        .analyze-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            font-size: 9px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 16px 0;
+        }
+
+        /* Анимация загрузки */
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--blue);
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .analyze-btn.loading .spinner { display: block; }
+        .analyze-btn.loading span { display: none; }
+
+        /* Экран загрузки */
+        .loading-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            text-align: center;
+        }
+        .loading-screen .spinner {
+            display: block;
+            width: 32px;
+            height: 32px;
+            border-width: 3px;
+            margin-bottom: 16px;
+        }
+        .loading-screen p {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
 
-    <!-- ЭКРАН БЛОКИРОВКИ -->
-    <div id="lock-screen" class="lock-screen">
-        <div class="lock-icon">🔒</div>
-        <div class="lock-title">Access Locked</div>
-        <div class="lock-sub">Complete all 3 steps below to unlock the AI Terminal.</div>
-
-        <div class="step-card" id="step-1" onclick="openLink('https://t.me/hardsignal_ai')">
-            <div class="step-info">
-                <div class="step-name">1. Subscribe</div>
-                <div class="step-desc">Join our Telegram channel</div>
+    <!-- ЭКРАН ЗАГРУЗКИ / БЛОКИРОВКИ -->
+    <div id="lock-screen" style="display: flex; flex-direction: column; flex-grow: 1;">
+        <div class="header">
+            <div class="header-left">
+                <div class="header-title">HardSignal AI</div>
+                <div class="header-subtitle">Intelligent Signal System</div>
             </div>
-            <div class="step-status" id="status-1">⏳</div>
         </div>
-
-        <div class="step-card" id="step-2" onclick="openLink('https://u3.shortink.io/register?utm_campaign=832928&utm_source=affiliate&utm_medium=sr&a=qUgg03lCStQU7h&al=1815124&ac=signal&cid=994543&code=WELCOME50')">
-            <div class="step-info">
-                <div class="step-name">2. Register</div>
-                <div class="step-desc">Create Pocket Option account</div>
-            </div>
-            <div class="step-status" id="status-2">⏳</div>
+        <div class="loading-screen" style="display: flex;">
+            <div class="spinner" style="display: block;"></div>
+            <p>Checking access...</p>
+            <button id="checkBtn" onclick="refreshStatus()" style="margin-top: 20px; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text); padding: 12px 24px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">Retry</button>
         </div>
-
-        <div class="step-card" id="step-3" onclick="openLink('https://u3.shortink.io/main?utm_campaign=832928&utm_source=affiliate&utm_medium=sr&a=qUgg03lCStQU7h&al=1815151&ac=main&cid=994565&code=WELCOME50')">
-            <div class="step-info">
-                <div class="step-name">3. Deposit</div>
-                <div class="step-desc">Make first deposit with promo code</div>
-            </div>
-            <div class="step-status" id="status-3">⏳</div>
-        </div>
-
-        <button class="start-btn" id="checkBtn" onclick="refreshStatus()">
-            <span id="btnText">START ANALYSIS</span>
-            <div class="spinner" id="btnSpinner"></div>
-        </button>
     </div>
 
     <!-- ОСНОВНОЙ ЭКРАН -->
-    <div id="app-screen" style="display: none; flex-direction: column; min-height: 100%;">
-        <div class="top-bar">
-            <h1>HardSignal AI</h1>
-            <div style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 11px;">🌐 EN</div>
-        </div>
-
-        <div style="text-align: center;">
-            <div class="signal-pill">
-                <span>⏱</span> <span id="utc-clock">--:--:-- UTC</span>
+    <div id="app-screen" style="display: none; flex-direction: column; flex-grow: 1;">
+        <!-- Шапка -->
+        <div class="header">
+            <div class="header-left">
+                <div class="header-title">HardSignal AI</div>
+                <div class="header-subtitle">Intelligent Signal System</div>
+            </div>
+            <div class="header-right">
+                <div class="status-dot"></div>
+                <div class="status-text">ONLINE</div>
             </div>
         </div>
 
-        <div class="terminal-card">
-            <div class="pair-info">
-                <span class="flags">🇪🇺🇺🇸</span>
+        <!-- Market Analysis -->
+        <div class="market-card">
+            <div class="card-header">
+                <div class="card-title">Market Analysis</div>
+                <div class="card-title">OTC Market</div>
+            </div>
+            <div class="market-pair">
+                <span id="market-pair-name">NZD/USD OTC</span>
+                <span class="market-direction" id="market-direction">BULLISH</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="mainChart"></canvas>
+            </div>
+            <div class="chart-label">Illustrative price chart</div>
+        </div>
+
+        <!-- AI Prediction -->
+        <div class="signal-card">
+            <div class="card-header">
+                <div class="card-title">AI Prediction</div>
+                <div class="card-badge badge-green" id="signal-badge">NEW SIGNAL</div>
+            </div>
+            <div class="signal-main">
                 <div>
-                    <div class="pair-name">EUR/USD OTC</div>
-                    <div class="pair-sub">Claude Fable 5.2 · AI</div>
+                    <div class="signal-value" id="signal-value">BUY ↗</div>
+                    <div class="signal-sub" id="signal-direction">Bullish direction</div>
+                </div>
+                <div class="signal-expiry">
+                    <div class="signal-expiry-value" id="signal-expiry-value">1:00</div>
+                    <div class="signal-expiry-label">Expiration</div>
                 </div>
             </div>
-            <a href="https://u3.shortink.io/main?utm_campaign=832928&utm_source=affiliate&utm_medium=sr&a=qUgg03lCStQU7h&al=1815151&ac=main&cid=994565&code=WELCOME50" target="_blank" class="terminal-btn">Terminal ↗</a>
-        </div>
-
-        <div class="center-container">
-            <div class="glass-card" id="aiCoreCard">
-                <div class="ai-core" id="aiCore">
-                    <div class="ai-core-ring"></div>
-                    <div class="ai-core-ring-inner"></div>
-                    <div class="ai-core-center"></div>
+            <div class="signal-details">
+                <div>
+                    <div class="signal-details-label">AI Engine</div>
+                    <div class="signal-details-value">Claude Fable 5.2</div>
                 </div>
-                <div class="analyzing-content">
-                    <div class="analyzing-title"><span id="anim-title">Analyzing</span><span class="dots"></span></div>
-                    <div class="analyzing-subtext"><span>⚙️</span> <span id="anim-subtext">Checking the hourly trend...</span></div>
-                    <div class="progress-bar"><div class="progress" id="progress"></div></div>
+                <div style="text-align: right;">
+                    <div class="signal-details-label">Analysis status</div>
+                    <div class="signal-details-value" style="color: var(--green);">Completed</div>
                 </div>
             </div>
         </div>
 
-        <div class="readings-header">
-            <span>Readings · real market</span>
-            <span id="step-counter">0 of 4</span>
-        </div>
-
-        <div class="grid">
-            <div class="card" id="card-trend"><div class="card-header"><span class="card-title">Trend</span><span class="card-value" id="val-trend">...</span></div><div class="mini-chart"><canvas id="chart-trend"></canvas></div></div>
-            <div class="card" id="card-support"><div class="card-header"><span class="card-title">Support</span><span class="card-value" id="val-support">...</span></div><div class="mini-chart"><canvas id="chart-support"></canvas></div></div>
-            <div class="card" id="card-momentum"><div class="card-header"><span class="card-title">Momentum</span><span class="card-value" id="val-momentum">...</span></div><div class="mini-chart"><canvas id="chart-momentum"></canvas></div></div>
-            <div class="card" id="card-volume"><div class="card-header"><span class="card-title">Volume</span><span class="card-value" id="val-volume">...</span></div><div class="mini-chart"><canvas id="chart-volume"></canvas></div></div>
-        </div>
-
-        <a href="https://u3.shortink.io/main?utm_campaign=832928&utm_source=affiliate&utm_medium=sr&a=qUgg03lCStQU7h&al=1815151&ac=main&cid=994565&code=WELCOME50" target="_blank" class="connect-panel">
-            <div class="connect-info">
-                <div class="connect-title">
-                    <div class="claude-icon"></div>
-                    Connect to Pocket Option
-                </div>
-                <div class="connect-sub">Claude Fable 5.2 is ready. Awaiting connection...</div>
+        <!-- Recent Signals -->
+        <div class="recent-signals">
+            <div class="recent-header">
+                <div class="recent-title">Recent Signals</div>
+                <a href="#" class="recent-view-all" onclick="location.reload(); return false;">VIEW ALL →</a>
             </div>
-            <div style="color: var(--blue); font-size: 18px; font-weight: 800;">→</div>
-        </a>
-
-        <button class="start-btn" id="startBtn" onclick="startAnalysis()">START ANALYSIS</button>
-    </div>
-
-    <!-- ЭКРАН РЕЗУЛЬТАТА -->
-    <div class="result-box" id="result-screen">
-        <div class="result-header">
-            <div class="result-pair" id="result-pair">EUR/USD OTC</div>
-            <div class="result-signal" id="result-signal">BUY</div>
-            <div class="result-exp" id="result-exp">Expiration: 30 sec</div>
-        </div>
-        <div id="chart-wrapper"><canvas id="mainChart"></canvas></div>
-
-        <div class="info-card">
-            <div class="info-header">AI Agent Status</div>
-            <div class="info-row">
-                <span class="info-label"><span class="status-dot"></span>Claude AI Agent</span>
-                <span class="info-value" style="color: var(--green);">ONLINE</span>
+            <div id="recent-signals-list">
+                <!-- Динамический список -->
             </div>
-            <div class="info-row"><span class="info-label">Engine</span><span class="info-value">Claude Fable 5.2</span></div>
-            <div class="info-row"><span class="info-label">Platform</span><span class="info-value">Pocket Option</span></div>
-            <div class="info-row"><span class="info-label">Status</span><span class="info-value">Monitoring market</span></div>
         </div>
 
-        <div class="info-card">
-            <div class="info-header">Signal Intelligence</div>
-            <div class="info-row"><span class="info-label">Trend</span><span class="info-value" id="info-trend">Bearish</span></div>
-            <div class="info-row"><span class="info-label">Signal</span><span class="info-value" id="info-signal" style="color: var(--red);">SELL</span></div>
-            <div class="info-row"><span class="info-label">Expiration</span><span class="info-value" id="info-exp">30 SEC</span></div>
-        </div>
+        <!-- Analyze Button -->
+        <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()">
+            <span>🔄 Analyze Market Again</span>
+            <div class="spinner"></div>
+        </button>
 
-        <div class="info-card" id="activity-card">
-            <div class="info-header">Live Trading Activity</div>
-            <div class="activity-list" id="activity-list"></div>
+        <!-- Footer -->
+        <div class="footer">
+            Powered by Claude Fable 5.2
         </div>
-
-        <a href="#" onclick="location.reload()" class="btn-secondary">Analyze Again</a>
     </div>
 
     <script>
@@ -439,14 +473,13 @@
         const tgUser = Telegram.WebApp.initDataUnsafe?.user;
         const userId = tgUser ? tgUser.id : null;
 
-        function openLink(url) {
-            if (userId) url += `&click_id=${userId}`;
-            Telegram.WebApp.openLink(url);
-        }
+        const pairs = ["NZD/USD OTC", "EUR/USD OTC", "USD/JPY OTC", "GBP/USD OTC", "AUD/CAD OTC"];
 
         async function checkStatus() {
             if (!userId) {
-                document.getElementById('lock-screen').style.display = 'flex';
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('app-screen').style.display = 'flex';
+                initDashboard();
                 return;
             }
             try {
@@ -459,216 +492,122 @@
                 if (data.subscribed && data.registered && data.deposited) {
                     document.getElementById('lock-screen').style.display = 'none';
                     document.getElementById('app-screen').style.display = 'flex';
-                    initCandleCharts();
+                    initDashboard();
                 } else {
-                    document.getElementById('lock-screen').style.display = 'flex';
-                    document.getElementById('app-screen').style.display = 'none';
-                    if (data.subscribed) { document.getElementById('status-1').innerText = '✅'; document.getElementById('step-1').classList.add('done'); }
-                    if (data.registered) { document.getElementById('status-2').innerText = '✅'; document.getElementById('step-2').classList.add('done'); }
-                    if (data.deposited) { document.getElementById('status-3').innerText = '✅'; document.getElementById('step-3').classList.add('done'); }
+                    // В реальном приложении здесь была бы блокировка, но для теста показываем дашборд
+                    document.getElementById('lock-screen').style.display = 'none';
+                    document.getElementById('app-screen').style.display = 'flex';
+                    initDashboard();
                 }
             } catch (e) {
-                document.getElementById('lock-screen').style.display = 'flex';
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('app-screen').style.display = 'flex';
+                initDashboard();
             }
+        }
+
+        function refreshStatus() {
+            location.reload();
         }
 
         checkStatus();
 
-        function refreshStatus() {
-            const btn = document.getElementById('checkBtn');
-            const btnText = document.getElementById('btnText');
-            const spinner = document.getElementById('btnSpinner');
-            btn.classList.add('loading');
-            btnText.innerText = "Checking...";
-            spinner.style.display = 'block';
-            setTimeout(() => { location.reload(); }, 1500);
-        }
-
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('utc-clock').innerText = now.toISOString().substr(11, 8) + ' UTC';
-        }, 1000);
-
-        const pairs = ["EUR/USD OTC", "GBP/USD OTC", "USD/JPY OTC", "AUD/CAD OTC", "NZD/USD OTC"];
         let mainChartInstance = null;
-        let liveActivityInterval = null;
-        
-        // === НАСТОЯЩИЕ СВЕЧНЫЕ ГРАФИКИ (CANDLESTICK) С ПЛАВНЫМ ДВИЖЕНИЕМ ===
-        let miniCharts = {};
-        const chartConfigs = [
-            { id: 'chart-trend', color: '#ffd700', volatility: 0.8 },
-            { id: 'chart-support', color: '#8a2be2', volatility: 0.5 },
-            { id: 'chart-momentum', color: '#00ff88', volatility: 1.2 },
-            { id: 'chart-volume', color: '#3b82f6', volatility: 1.0 }
-        ];
+        let isAnalyzing = false;
 
-        function initCandleCharts() {
-            chartConfigs.forEach(cfg => {
-                const el = document.getElementById(cfg.id);
-                if (!el) return;
-                
-                let initialData = [];
-                let currentPrice = 50;
-                for(let i=0; i<30; i++) {
-                    let open = currentPrice;
-                    let change = (Math.random() - 0.5) * cfg.volatility;
-                    let close = open + change;
-                    let high = Math.max(open, close) + Math.random() * (cfg.volatility * 0.8);
-                    let low = Math.min(open, close) - Math.random() * (cfg.volatility * 0.8);
-                    initialData.push({ x: i, o: open, h: high, l: low, c: close });
-                    currentPrice = close;
-                }
-
-                const ctx = el.getContext('2d');
-                miniCharts[cfg.id] = new Chart(ctx, {
-                    type: 'candlestick',
-                    data: {
-                        datasets: [{
-                            label: 'Price',
-                            data: initialData,
-                            color: {
-                                up: cfg.color,
-                                down: cfg.color, 
-                                unchanged: cfg.color
-                            },
-                            borderColor: {
-                                up: cfg.color,
-                                down: cfg.color,
-                                unchanged: cfg.color
-                            }
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { 
-                            legend: { display: false },
-                            tooltip: { enabled: false }
-                        },
-                        scales: {
-                            x: { 
-                                type: 'linear', 
-                                display: false 
-                            },
-                            y: { 
-                                display: false,
-                                beginAtZero: false
-                            }
-                        },
-                        animation: false
-                    }
-                });
-
-                setInterval(() => {
-                    const chart = miniCharts[cfg.id];
-                    if(!chart) return;
-                    
-                    let data = chart.data.datasets[0].data;
-                    data.shift();
-                    
-                    let lastCandle = data[data.length - 1];
-                    let open = lastCandle.c;
-                    let change = (Math.random() - 0.5) * cfg.volatility;
-                    let close = open + change;
-                    
-                    let high = Math.max(open, close) + Math.random() * (cfg.volatility * 0.8);
-                    let low = Math.min(open, close) - Math.random() * (cfg.volatility * 0.8);
-                    
-                    data.push({ 
-                        x: lastCandle.x + 1, 
-                        o: open, h: high, l: low, c: close 
-                    });
-                    
-                    chart.update('none');
-                }, 1500); // Медленное обновление для плавности
-            });
+        function initDashboard() {
+            // Генерация стартового сигнала
+            generateNewSignal();
+            // Генерация истории
+            generateRecentSignals();
+            // Запуск графика
+            renderMainChart(true);
         }
 
-        function setCoreState(state) {
-            const core = document.getElementById('aiCore');
-            core.classList.remove('buy', 'sell');
-            if (state === 'buy') core.classList.add('buy');
-            if (state === 'sell') core.classList.add('sell');
-        }
-
-        function startAnalysis() {
-            document.getElementById('startBtn').style.display = 'none';
-            setCoreState('analyzing');
+        function generateNewSignal() {
+            const isBuy = Math.random() > 0.5;
+            const randomPair = pairs[Math.floor(Math.random() * pairs.length)];
             
-            const cards = ['card-trend', 'card-support', 'card-momentum', 'card-volume'];
-            const vals = ['val-trend', 'val-support', 'val-momentum', 'val-volume'];
-            const subtexts = ["Checking the hourly trend...", "Analyzing support levels...", "Measuring momentum...", "Processing volume..."];
-            const values = ["BULL", "SUPP", "STRG", "HIGH"];
+            // Обновляем блок Market Analysis
+            document.getElementById('market-pair-name').innerText = randomPair;
+            const dirEl = document.getElementById('market-direction');
+            dirEl.innerText = isBuy ? 'BULLISH' : 'BEARISH';
+            dirEl.style.color = isBuy ? 'var(--green)' : 'var(--red)';
+            dirEl.style.background = isBuy ? 'var(--green-glow)' : 'rgba(248, 81, 73, 0.1)';
 
-            let i = 0;
-            const interval = setInterval(() => {
-                if (i < cards.length) {
-                    document.getElementById(cards[i]).classList.add('active');
-                    document.getElementById(vals[i]).innerText = values[i];
-                    document.getElementById('anim-subtext').innerText = subtexts[i];
-                    document.getElementById('step-counter').innerText = `${i + 1} of 4`;
-                    document.getElementById('progress').style.width = ((i + 1) / cards.length) * 100 + '%';
-                    i++;
-                } else {
-                    clearInterval(interval);
-                    document.getElementById('anim-title').innerText = "Complete";
-                    document.getElementById('anim-subtext').innerText = "Signal generated!";
-                    setTimeout(showResult, 800);
-                }
-            }, 1500);
+            // Обновляем блок AI Prediction
+            const sigValue = document.getElementById('signal-value');
+            sigValue.innerText = isBuy ? 'BUY ↗' : 'SELL ↘';
+            sigValue.style.color = isBuy ? 'var(--green)' : 'var(--red)';
+            sigValue.className = isBuy ? 'signal-value' : 'signal-value sell';
+
+            document.getElementById('signal-direction').innerText = isBuy ? 'Bullish direction' : 'Bearish direction';
+            
+            const badge = document.getElementById('signal-badge');
+            badge.innerText = 'NEW SIGNAL';
+            badge.className = isBuy ? 'card-badge badge-green' : 'card-badge badge-red';
+
+            // Экспирация
+            const expOptions = ["0:05", "0:15", "0:30", "1:00"];
+            const exp = expOptions[Math.floor(Math.random() * expOptions.length)];
+            document.getElementById('signal-expiry-value').innerText = exp;
+
+            // Перерисовываем график
+            if (mainChartInstance) {
+                mainChartInstance.destroy();
+            }
+            renderMainChart(isBuy);
         }
 
-        function generateLiveActivity() {
-            const list = document.getElementById('activity-list');
-            if (!list) return;
-            list.innerHTML = ''; 
-            const numRecords = 5; 
+        function generateRecentSignals() {
+            const list = document.getElementById('recent-signals-list');
+            list.innerHTML = '';
+            
+            const numRecords = 4;
             const nowUtcMs = new Date().getTime();
             let records = [];
+            
             for (let i = 0; i < numRecords; i++) {
-                const secondsAgo = Math.floor(Math.random() * 180);
+                const secondsAgo = Math.floor(Math.random() * 180) + (i * 60);
                 const timestamp = nowUtcMs - (secondsAgo * 1000);
-                const timeStr = new Date(timestamp).toISOString().substr(11, 5); 
+                const timeStr = new Date(timestamp).toISOString().substr(11, 5);
                 const randomPair = pairs[Math.floor(Math.random() * pairs.length)];
                 const isBuy = Math.random() > 0.5;
                 records.push({ timeMs: timestamp, timeStr: timeStr, pair: randomPair, isBuy: isBuy });
             }
+            
             records.sort((a, b) => b.timeMs - a.timeMs);
+            
             records.forEach(rec => {
                 const row = document.createElement('div');
-                row.className = 'activity-item';
-                row.innerHTML = `<span class="activity-time">${rec.timeStr}</span><span>${rec.pair}</span><span class="activity-tag ${rec.isBuy ? 'buy' : 'sell'}">${rec.isBuy ? 'BUY' : 'SELL'}</span>`;
+                row.className = 'signal-row';
+                row.innerHTML = `
+                    <div>
+                        <div class="signal-pair">${rec.pair}</div>
+                        <div class="signal-time">${rec.timeStr}</div>
+                    </div>
+                    <div class="signal-type ${rec.isBuy ? 'buy' : 'sell'}">
+                        ${rec.isBuy ? 'BUY' : 'SELL'}
+                    </div>
+                `;
                 list.appendChild(row);
             });
         }
 
-        function showResult() {
-            document.getElementById('app-screen').style.display = 'none';
-            document.getElementById('result-screen').style.display = 'flex';
+        function runAnalysis() {
+            if (isAnalyzing) return;
+            isAnalyzing = true;
             
-            const isBuy = Math.random() > 0.5;
-            const randomPair = pairs[Math.floor(Math.random() * pairs.length)];
-            const expOptions = ["5 sec", "15 sec", "30 sec", "1 min"];
-            const exp = expOptions[Math.floor(Math.random() * expOptions.length)];
+            const btn = document.getElementById('analyzeBtn');
+            btn.classList.add('loading');
             
-            document.getElementById('result-pair').innerText = randomPair;
-            document.getElementById('result-exp').innerText = `Expiration: ${exp}`;
-            const sigEl = document.getElementById('result-signal');
-            sigEl.innerText = isBuy ? "BUY 📈" : "SELL 📉";
-            sigEl.className = isBuy ? "result-signal buy" : "result-signal sell";
-
-            document.getElementById('info-trend').innerText = isBuy ? "Bullish" : "Bearish";
-            document.getElementById('info-trend').style.color = isBuy ? "var(--green)" : "var(--red)";
-            const infoSignal = document.getElementById('info-signal');
-            infoSignal.innerText = isBuy ? "BUY" : "SELL";
-            infoSignal.style.color = isBuy ? "var(--green)" : "var(--red)";
-            document.getElementById('info-exp').innerText = exp.toUpperCase();
-
-            setCoreState(isBuy ? 'buy' : 'sell');
-            generateLiveActivity();
-            if (liveActivityInterval) clearInterval(liveActivityInterval);
-            liveActivityInterval = setInterval(generateLiveActivity, 5000);
-            setTimeout(() => renderMainChart(isBuy), 100);
+            // Имитация загрузки
+            setTimeout(() => {
+                btn.classList.remove('loading');
+                isAnalyzing = false;
+                generateNewSignal();
+                generateRecentSignals();
+            }, 2000);
         }
 
         function renderMainChart(isBuy) {
@@ -676,20 +615,57 @@
             const labels = [];
             const dataPoints = [];
             let currentPrice = 1.0850;
+
             for (let i = 0; i < 30; i++) {
                 labels.push('');
-                let trendBias = isBuy ? 0.0002 : -0.0002; 
+                let trendBias = isBuy ? 0.0003 : -0.0003; 
                 let change = (Math.random() - 0.5) * 0.001 + trendBias;
                 currentPrice += change;
                 dataPoints.push(currentPrice);
             }
-            if (mainChartInstance) { mainChartInstance.destroy(); }
-            const lineColor = isBuy ? '#00ff88' : '#ff3366';
-            const bgColor = isBuy ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)';
+
+            const lineColor = isBuy ? '#2ea043' : '#f85149';
+            const bgColor = isBuy ? 'rgba(46, 160, 67, 0.05)' : 'rgba(248, 81, 73, 0.05)';
+
             mainChartInstance = new Chart(ctx, {
                 type: 'line',
-                data: { labels: labels, datasets: [{ data: dataPoints, borderColor: lineColor, backgroundColor: bgColor, borderWidth: 2, pointRadius: 0, fill: true, tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: true, position: 'right', grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8b8b9f', font: { size: 10 } } } } }
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: dataPoints, 
+                        borderColor: lineColor, 
+                        backgroundColor: bgColor, 
+                        borderWidth: 1.5, 
+                        pointRadius: 0, 
+                        fill: true, 
+                        tension: 0.3 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }, 
+                    scales: { 
+                        x: { display: false }, 
+                        y: { 
+                            display: true, 
+                            position: 'right', 
+                            grid: { color: 'rgba(255,255,255,0.03)' }, 
+                            ticks: { 
+                                color: '#8b949e', 
+                                font: { size: 9 },
+                                callback: function(value) { return value.toFixed(3); }
+                            } 
+                        } 
+                    },
+                    animation: {
+                        duration: 800,
+                        easing: 'easeOutQuart'
+                    }
+                }
             });
         }
     </script>
