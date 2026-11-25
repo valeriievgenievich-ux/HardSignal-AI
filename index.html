@@ -39,89 +39,41 @@
 
         /* --- ЦЕНТРАЛЬНАЯ ПЛАШКА --- */
         .center-container {
-            flex-grow: 1; 
-            display: flex; align-items: center; justify-content: center;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 20px;
+            flex-grow: 1; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; margin-bottom: 20px;
         }
-        
         .glass-card {
             width: 100%; max-width: 320px;
             background: linear-gradient(135deg, rgba(30, 40, 50, 0.8), rgba(15, 20, 25, 0.9));
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom: 2px solid var(--green);
-            border-radius: 16px;
-            padding: 20px;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 2px solid var(--green);
+            border-radius: 16px; padding: 20px;
             display: flex; align-items: center; gap: 15px;
-            position: relative;
-            z-index: 2;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            overflow: hidden;
+            position: relative; z-index: 2; box-shadow: 0 10px 30px rgba(0,0,0,0.6); overflow: hidden;
         }
-
-        /* Свечение логотипа */
         .logo-circle {
-            width: 50px; height: 50px;
-            border-radius: 50%;
+            width: 50px; height: 50px; border-radius: 50%;
             background: radial-gradient(circle, rgba(0, 255, 136, 0.2) 0%, transparent 70%);
             display: flex; align-items: center; justify-content: center;
-            font-size: 28px;
-            border: 1px solid rgba(0, 255, 136, 0.5);
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-            animation: pulseLogo 2s infinite alternate;
+            font-size: 28px; border: 1px solid rgba(0, 255, 136, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3); animation: pulseLogo 2s infinite alternate;
         }
-        
         @keyframes pulseLogo {
             from { box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
             to { box-shadow: 0 0 30px rgba(0, 255, 136, 0.6); }
         }
+        .analyzing-text-block { display: flex; flex-direction: column; gap: 5px; z-index: 2; }
+        .analyzing-title { font-size: 22px; font-weight: bold; color: #fff; display: flex; align-items: baseline; }
+        .dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
+        @keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
+        .analyzing-subtext { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 5px; transition: 0.3s; }
 
-        .analyzing-text-block {
-            display: flex; flex-direction: column; gap: 5px;
-            z-index: 2;
-        }
-
-        .analyzing-title {
-            font-size: 22px; font-weight: bold;
-            color: #fff;
-            display: flex; align-items: baseline;
-        }
-        
-        /* Анимация точек (...) */
-        .dots::after {
-            content: '';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-        @keyframes dots {
-            0%, 20% { content: ''; }
-            40% { content: '.'; }
-            60% { content: '..'; }
-            80%, 100% { content: '...'; }
-        }
-
-        .analyzing-subtext {
-            font-size: 13px; color: var(--muted);
-            display: flex; align-items: center; gap: 5px;
-            transition: 0.3s;
-        }
-
-        /* Волна внутри плашки */
         .wave {
-            position: absolute;
-            bottom: 0; left: 0; width: 200%; height: 30px;
+            position: absolute; bottom: 0; left: 0; width: 200%; height: 30px;
             background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%2300ff88" fill-opacity="0.15" d="M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,197.3C960,213,1056,203,1152,170.7C1248,139,1344,85,1392,58.7L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
-            background-size: 50% 100%;
-            background-repeat: repeat-x;
-            animation: waveAnim 3s linear infinite;
-            z-index: 1;
+            background-size: 50% 100%; background-repeat: repeat-x; animation: waveAnim 3s linear infinite; z-index: 1;
         }
-        @keyframes waveAnim {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
+        @keyframes waveAnim { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
         /* Статус */
         .status-container { background: var(--card-bg); border-radius: 12px; padding: 15px; text-align: center; margin-top: auto; z-index: 10;}
@@ -137,7 +89,6 @@
         /* Экран результата */
         .result-box { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
         .result-header { text-align: center; margin-bottom: 10px; }
         .pair { font-size: 24px; color: var(--text); font-weight: bold; }
         .signal { font-size: 36px; font-weight: 900; margin: 5px 0; }
@@ -147,16 +98,28 @@
 
         #chart-wrapper {
             flex-grow: 1; width: 100%; position: relative; background: var(--card-bg);
-            border-radius: 12px; padding: 10px; box-sizing: border-box; margin-bottom: 15px; min-height: 250px;
+            border-radius: 12px; padding: 10px; box-sizing: border-box; margin-bottom: 15px; min-height: 200px;
+        }
+
+        /* Кнопка Trade Now */
+        .trade-btn {
+            display: block; width: 100%; padding: 18px; text-align: center;
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000; font-size: 18px; font-weight: 900; text-transform: uppercase;
+            text-decoration: none; border-radius: 12px; margin-bottom: 10px;
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4); box-sizing: border-box;
+        }
+        .trade-btn:active { transform: scale(0.98); }
+
+        .btn-secondary {
+            background: #2a3441; color: white; padding: 15px;
         }
     </style>
 </head>
 <body>
 
     <div id="analysis-screen" style="display: flex; flex-direction: column; height: 100%;">
-        <div class="header">
-            <div class="title">HardSignal AI</div>
-        </div>
+        <div class="header"><div class="title">HardSignal AI</div></div>
 
         <div class="grid">
             <div class="card" id="card-trend"><div class="card-title">Trend Analysis</div><div class="card-value" id="val-trend">Waiting...</div></div>
@@ -165,17 +128,13 @@
             <div class="card" id="card-volume"><div class="card-title">Volume</div><div class="card-value" id="val-volume">Waiting...</div></div>
         </div>
 
-        <!-- ЦЕНТРАЛЬНАЯ ПЛАШКА -->
         <div class="center-container">
             <div class="glass-card">
                 <div class="wave"></div>
-                <!-- Сюда можно вставить свою картинку через <img> -->
                 <div class="logo-circle">🧠</div>
                 <div class="analyzing-text-block">
                     <div class="analyzing-title"><span id="anim-title">Analyzing</span><span class="dots"></span></div>
-                    <div class="analyzing-subtext">
-                        <span id="anim-subtext">Checking the hourly trend...</span>
-                    </div>
+                    <div class="analyzing-subtext"><span id="anim-subtext">Checking the hourly trend...</span></div>
                 </div>
             </div>
         </div>
@@ -195,7 +154,13 @@
         <div id="chart-wrapper">
             <canvas id="myChart"></canvas>
         </div>
-        <button onclick="location.reload()" style="background: #2a3441; color: white;">🔄 Analyze Again</button>
+        
+        <!-- Кнопка для перехода в Pocket Option -->
+        <a href="https://u3.shortink.io/main?utm_campaign=832928&utm_source=affiliate&utm_medium=sr&a=qUgg03lCStQU7h&al=1815151&ac=main&cid=994565&code=WELCOME50" target="_blank" class="trade-btn" id="trade-link">
+            📈 Trade on Pocket Option
+        </a>
+        
+        <button onclick="location.reload()" class="btn-secondary">🔄 Analyze Again</button>
     </div>
 
     <script>
@@ -219,17 +184,13 @@
                     document.getElementById(cards[i]).classList.add('active');
                     document.getElementById(vals[i]).innerText = values[i];
                     document.getElementById(vals[i]).style.color = "var(--green)";
-                    
-                    // Меняем текст в плашке
                     document.getElementById('anim-subtext').innerText = subtexts[i];
-                    
                     document.getElementById('progress').style.width = ((i + 1) / cards.length) * 100 + '%';
                     i++;
                 } else {
                     clearInterval(interval);
                     document.getElementById('anim-title').innerText = "Complete";
                     document.getElementById('anim-subtext').innerText = "Signal generated!";
-                    
                     setTimeout(showResult, 800);
                 }
             }, 1500);
@@ -248,6 +209,18 @@
             const sigEl = document.getElementById('result-signal');
             sigEl.innerText = isBuy ? "BUY 📈" : "SELL 📉";
             sigEl.className = isBuy ? "signal buy" : "signal sell";
+
+            // Меняем текст на кнопке в зависимости от сигнала
+            const tradeBtn = document.getElementById('trade-link');
+            if (isBuy) {
+                tradeBtn.innerText = "📈 BUY Now on Pocket Option";
+                tradeBtn.style.background = "linear-gradient(135deg, #00ff88, #00cc6a)";
+            } else {
+                tradeBtn.innerText = "📉 SELL Now on Pocket Option";
+                tradeBtn.style.background = "linear-gradient(135deg, #ff3366, #cc2952)";
+                tradeBtn.style.color = "#fff";
+                tradeBtn.style.boxShadow = "0 5px 20px rgba(255, 51, 102, 0.4)";
+            }
 
             setTimeout(() => renderChart(isBuy), 100);
         }
@@ -291,10 +264,7 @@
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { display: false },
-                        y: { 
-                            display: true, position: 'right',
-                            grid: { color: '#2a3441' },
-                            ticks: { color: '#64748b', font: { size: 10 } }
+                        y: { display: true, position: 'right', grid: { color: '#2a3441' }, ticks: { color: '#64748b', font: { size: 10 } }
                         }
                     }
                 }
