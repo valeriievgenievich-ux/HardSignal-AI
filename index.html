@@ -12,7 +12,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
 
-        /* ========== ОБЩИЕ ПЕРЕМЕННЫЕ (стиль первой страницы) ========== */
+        /* ========== ОБЩИЕ ПЕРЕМЕННЫЕ ========== */
         :root {
             --bg: #0a0514;
             --card-bg: rgba(25, 20, 40, 0.6);
@@ -25,7 +25,7 @@
             --text: #ffffff;
             --muted: #8b8b9f;
             
-            /* Переменные для второй страницы (премиум) */
+            /* Переменные для второй страницы */
             --prem-bg: #0d1117;
             --prem-card: #161b22;
             --prem-border: #21262d;
@@ -239,16 +239,30 @@
         .prem-signal-type.buy { color: var(--prem-green); background: rgba(46, 160, 67, 0.1); }
         .prem-signal-type.sell { color: var(--prem-red); background: rgba(248, 81, 73, 0.1); }
 
-        .prem-analyze-btn {
-            width: 100%; padding: 16px; background: var(--prem-card); border: 1px solid var(--prem-border);
-            border-radius: 12px; color: var(--prem-text); font-size: 13px; font-weight: 600; cursor: pointer;
-            transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 12px;
+        /* AI CORE на второй странице (New Analysis) */
+        .new-analysis-container {
+            background: var(--prem-card);
+            border: 1px solid var(--prem-border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.3s;
         }
-        .prem-analyze-btn:hover { border-color: var(--prem-blue); background: rgba(88, 166, 255, 0.05); }
-        .prem-analyze-btn:active { transform: scale(0.98); }
-        .prem-analyze-btn.loading span { display: none; }
-        .prem-analyze-btn .spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: var(--prem-blue); animation: spin 0.8s linear infinite; }
-        .prem-analyze-btn.loading .spinner { display: block; }
+        .new-analysis-container:hover {
+            border-color: var(--prem-blue);
+        }
+        .new-analysis-container .ai-core-ring { border-top-color: var(--prem-blue); border-right-color: var(--purple); filter: drop-shadow(0 0 8px rgba(88, 166, 255, 0.6)); }
+        .new-analysis-container .ai-core-ring-inner { border-bottom-color: var(--purple); border-left-color: var(--prem-blue); }
+        .new-analysis-container .ai-core-center { background: radial-gradient(circle, var(--prem-blue) 0%, var(--purple) 100%); box-shadow: 0 0 12px rgba(88, 166, 255, 0.6), 0 0 20px rgba(138, 43, 226, 0.4); }
+        
+        .new-analysis-title { font-size: 16px; font-weight: 800; color: var(--prem-text); display: flex; align-items: baseline; }
+        .new-analysis-subtext { font-size: 10px; color: var(--prem-muted); margin-top: 2px; }
+        .new-analysis-progress-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+        .new-analysis-progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--purple), var(--prem-blue)); transition: width 0.4s ease; }
 
         .prem-footer { text-align: center; font-size: 9px; color: var(--prem-muted); text-transform: uppercase; letter-spacing: 1px; padding: 16px 0; }
 
@@ -412,11 +426,19 @@
             <div id="prem-recent-list"></div>
         </div>
 
-        <!-- Analyze Again -->
-        <button class="prem-analyze-btn" id="premAnalyzeBtn" onclick="premRunAnalysis()">
-            <span>🔄 Analyze Market Again</span>
-            <div class="spinner"></div>
-        </button>
+        <!-- AI CORE: NEW ANALYSIS -->
+        <div class="new-analysis-container" id="newAnalysisBtn" onclick="runNewAnalysis()">
+            <div class="ai-core" id="newAiCore">
+                <div class="ai-core-ring"></div>
+                <div class="ai-core-ring-inner"></div>
+                <div class="ai-core-center"></div>
+            </div>
+            <div class="analyzing-content">
+                <div class="new-analysis-title"><span id="newAnimTitle">New Analysis</span><span class="dots" id="newDots"></span></div>
+                <div class="new-analysis-subtext"><span>⚙️</span> <span id="newAnimSubtext">Click to start...</span></div>
+                <div class="new-analysis-progress-bar"><div class="new-analysis-progress" id="newProgress"></div></div>
+            </div>
+        </div>
 
         <div class="prem-footer">Powered by Claude Fable 5.2</div>
     </div>
@@ -432,6 +454,7 @@
         let miniCharts = {};
         let premChartInstance = null;
         let isAnalyzing = false;
+        let newAnalysisInterval = null;
 
         // ====== ПРОВЕРКА СТАТУСА ======
         function openLink(url) {
@@ -495,7 +518,6 @@
 
         function initFirstPage() {
             initCandleCharts();
-            generatePrefs();
         }
 
         function initCandleCharts() {
@@ -584,6 +606,7 @@
             document.getElementById('result-screen').style.display = 'flex';
             generatePremiumSignal();
             generatePrefs();
+            resetNewAnalysisState();
         }
 
         function generatePremiumSignal() {
@@ -643,24 +666,84 @@
             });
         }
 
-        function premRunAnalysis() {
+        // ====== ВТОРАЯ СТРАНИЦА: NEW ANALYSIS (AI CORE) ======
+        function resetNewAnalysisState() {
+            if (newAnalysisInterval) clearInterval(newAnalysisInterval);
+            document.getElementById('newAnimTitle').innerText = 'New Analysis';
+            document.getElementById('newAnimSubtext').innerText = 'Click to start...';
+            document.getElementById('newProgress').style.width = '0%';
+            document.getElementById('newDots').style.display = 'none'; // Скрываем точки пока не нажали
+            const core = document.getElementById('newAiCore');
+            core.classList.remove('buy', 'sell');
+            
+            // Восстанавливаем кликабельность
+            const btn = document.getElementById('newAnalysisBtn');
+            btn.style.pointerEvents = 'auto';
+            btn.style.opacity = '1';
+        }
+
+        function runNewAnalysis() {
             if (isAnalyzing) return;
             isAnalyzing = true;
-            const btn = document.getElementById('premAnalyzeBtn');
-            btn.classList.add('loading');
-            setTimeout(() => {
-                btn.classList.remove('loading');
-                isAnalyzing = false;
-                generatePremiumSignal();
-                generatePrefs();
-            }, 2000);
+
+            const btn = document.getElementById('newAnalysisBtn');
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.7';
+
+            const title = document.getElementById('newAnimTitle');
+            const subtext = document.getElementById('newAnimSubtext');
+            const progress = document.getElementById('newProgress');
+            const dots = document.getElementById('newDots');
+            const core = document.getElementById('newAiCore');
+
+            title.innerText = 'Analyzing';
+            dots.style.display = 'inline';
+            subtext.innerText = 'Checking the hourly trend...';
+            
+            const steps = [
+                "Checking the hourly trend...",
+                "Analyzing support levels...",
+                "Measuring momentum...",
+                "Processing volume..."
+            ];
+
+            let stepIndex = 0;
+            newAnalysisInterval = setInterval(() => {
+                if (stepIndex < steps.length) {
+                    subtext.innerText = steps[stepIndex];
+                    progress.style.width = ((stepIndex + 1) / steps.length) * 100 + '%';
+                    stepIndex++;
+                } else {
+                    clearInterval(newAnalysisInterval);
+                    title.innerText = 'Complete';
+                    dots.style.display = 'none';
+                    subtext.innerText = 'Signal generated!';
+                    
+                    // Обновляем сигнал
+                    generatePremiumSignal();
+                    generatePrefs();
+
+                    setTimeout(() => {
+                        resetNewAnalysisState();
+                        isAnalyzing = false;
+                        // Меняем цвет ядра на основе последнего сигнала
+                        const isBuy = document.getElementById('prem-signal-value').style.color === 'var(--prem-green)' || document.getElementById('prem-signal-value').style.color === 'rgb(46, 160, 67)';
+                        // Просто проверяем класс, который мы поставили в generatePremiumSignal
+                        const sigClass = document.getElementById('prem-signal-value').className;
+                        if (sigClass.includes('sell')) {
+                            core.classList.add('sell');
+                        } else {
+                            core.classList.add('buy');
+                        }
+                    }, 1000);
+                }
+            }, 1200); // Каждые 1.2 сек меняем шаг
         }
 
         function backToHome() {
             document.getElementById('result-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'flex';
             document.getElementById('startBtn').style.display = 'flex';
-            // Сброс прогресс-бара
             document.getElementById('progress').style.width = '0%';
             document.getElementById('anim-title').innerText = 'Analyzing';
             document.getElementById('anim-subtext').innerText = 'Checking the hourly trend...';
@@ -671,6 +754,8 @@
             ['val-trend', 'val-support', 'val-momentum', 'val-volume'].forEach(id => {
                 document.getElementById(id).innerText = '...';
             });
+            isAnalyzing = false;
+            if (newAnalysisInterval) clearInterval(newAnalysisInterval);
         }
 
         function renderPremChart(isBuy) {
