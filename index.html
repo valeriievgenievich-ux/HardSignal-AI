@@ -374,13 +374,10 @@
         </div>
 
         <!-- Live Trading Activity -->
-        <div class="info-card">
+        <div class="info-card" id="activity-card">
             <div class="info-header">Live Trading Activity</div>
-            <div class="activity-list">
-                <div class="activity-item"><span class="activity-time">14:32</span><span>NZD/USD</span><span class="activity-tag sell">SELL</span></div>
-                <div class="activity-item"><span class="activity-time">14:31</span><span>EUR/USD</span><span class="activity-tag buy">BUY</span></div>
-                <div class="activity-item"><span class="activity-time">14:29</span><span>GBP/USD</span><span class="activity-tag sell">SELL</span></div>
-                <div class="activity-item"><span class="activity-time">14:25</span><span>USD/JPY</span><span class="activity-tag buy">BUY</span></div>
+            <div class="activity-list" id="activity-list">
+                <!-- Сюда будут добавляться строки -->
             </div>
         </div>
 
@@ -490,6 +487,51 @@
             }, 1500);
         }
 
+        // ФУНКЦИЯ ДЛЯ ГЕНЕРАЦИИ LIVE ACTIVITY (в пределах последних 3 минут от текущего UTC)
+        function generateLiveActivity() {
+            const list = document.getElementById('activity-list');
+            list.innerHTML = ''; // Очищаем старые записи
+
+            const numRecords = 5; // Количество записей
+            const now = new Date();
+            const nowUtcMs = now.getTime();
+
+            // Генерируем записи с временем в пределах последних 3 минут (180 000 мс)
+            let records = [];
+            for (let i = 0; i < numRecords; i++) {
+                // Случайное время в пределах от 0 до 180 секунд назад
+                const secondsAgo = Math.floor(Math.random() * 180);
+                const timestamp = nowUtcMs - (secondsAgo * 1000);
+                const date = new Date(timestamp);
+                const timeStr = date.toISOString().substr(11, 5); // ЧЧ:ММ (без секунд, как в твоём примере)
+                
+                const randomPair = pairs[Math.floor(Math.random() * pairs.length)];
+                const isBuy = Math.random() > 0.5;
+                
+                records.push({
+                    timeMs: timestamp,
+                    timeStr: timeStr,
+                    pair: randomPair,
+                    isBuy: isBuy
+                });
+            }
+
+            // Сортируем по времени (сначала самые новые)
+            records.sort((a, b) => b.timeMs - a.timeMs);
+
+            // Отображаем
+            records.forEach(rec => {
+                const row = document.createElement('div');
+                row.className = 'activity-item';
+                row.innerHTML = `
+                    <span class="activity-time">${rec.timeStr}</span>
+                    <span>${rec.pair}</span>
+                    <span class="activity-tag ${rec.isBuy ? 'buy' : 'sell'}">${rec.isBuy ? 'BUY' : 'SELL'}</span>
+                `;
+                list.appendChild(row);
+            });
+        }
+
         function showResult() {
             document.getElementById('app-screen').style.display = 'none';
             document.getElementById('result-screen').style.display = 'flex';
@@ -517,34 +559,8 @@
             
             document.getElementById('info-exp').innerText = exp.toUpperCase();
 
-            setTimeout(() => renderMainChart(isBuy), 100);
-        }
+            // Запускаем генерацию Live Activity
+            generateLiveActivity();
 
-        function renderMainChart(isBuy) {
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            const labels = [];
-            const dataPoints = [];
-            let currentPrice = 1.0850;
-
-            for (let i = 0; i < 30; i++) {
-                labels.push('');
-                let trendBias = isBuy ? 0.0002 : -0.0002; 
-                let change = (Math.random() - 0.5) * 0.001 + trendBias;
-                currentPrice += change;
-                dataPoints.push(currentPrice);
-            }
-
-            if (mainChartInstance) { mainChartInstance.destroy(); }
-
-            const lineColor = isBuy ? '#00ff88' : '#ff3366';
-            const bgColor = isBuy ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)';
-
-            mainChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: { labels: labels, datasets: [{ data: dataPoints, borderColor: lineColor, backgroundColor: bgColor, borderWidth: 2, pointRadius: 0, fill: true, tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: true, position: 'right', grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8b8b9f', font: { size: 10 } } } } }
-            });
-        }
-    </script>
-</body>
-</html>
+            // И обновляем её каждые 5 секунд, пока пользователь на экране результата
+            if (window.liveActivityInterval) clearInterval(window.live
