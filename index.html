@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HardSignal AI Terminal</title>
+    <title>HardSignal AI</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -13,213 +13,280 @@
         :root {
             --bg: #0a0514;
             --card-bg: rgba(25, 20, 40, 0.6);
-            --border: rgba(255, 255, 255, 0.1);
+            --border: rgba(255, 255, 255, 0.08);
             --green: #00ff88;
             --red: #ff3366;
             --purple: #8a2be2;
-            --text: #e2e8f0;
+            --text: #ffffff;
             --muted: #8b8b9f;
         }
 
         body {
-            background: radial-gradient(circle at top left, #1a0b2e 0%, #0a0514 50%);
+            background: radial-gradient(circle at top, #1a0b2e 0%, #0a0514 60%);
             color: var(--text);
             font-family: 'Inter', sans-serif;
             margin: 0; padding: 15px;
             display: flex; flex-direction: column; height: 100vh; box-sizing: border-box;
-            overflow: hidden;
+            overflow-y: auto; overflow-x: hidden;
         }
         
         /* Шапка */
-        .header { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .title { font-size: 20px; font-weight: 800; letter-spacing: 1px; background: linear-gradient(90deg, #fff, #a0aec0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .top-bar h1 { font-size: 18px; font-weight: 800; margin: 0; }
+        .lang-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; padding: 5px 10px; border-radius: 8px; font-size: 12px; }
 
-        /* Сетка карточек */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        
-        .card {
+        /* Плашка Signal */
+        .signal-pill {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: var(--green);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        /* Карточка терминала */
+        .terminal-card {
             background: var(--card-bg);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border);
-            border-radius: 16px; padding: 12px;
-            display: flex; flex-direction: column; gap: 8px;
-            position: relative; overflow: hidden; transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        
-        .card.active { 
-            border-color: rgba(0, 255, 136, 0.4); 
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
-            background: rgba(20, 40, 30, 0.7);
+        .pair-info { display: flex; align-items: center; gap: 10px; }
+        .flags { font-size: 20px; }
+        .pair-name { font-weight: 800; font-size: 16px; }
+        .pair-sub { font-size: 11px; color: var(--muted); }
+        .terminal-btn {
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            color: #ff3366;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
         }
-        
-        .card-header { display: flex; justify-content: space-between; align-items: center; }
-        .card-title { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
-        .card-icon { font-size: 14px; opacity: 0.7; }
-        .card-value { font-size: 13px; font-weight: 600; color: #fff; }
-        
-        /* Мини-график в карточке */
-        .mini-chart { height: 30px; width: 100%; margin-top: 5px; opacity: 0.5; }
 
-        /* Центральная плашка */
-        .center-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 20px; }
-        
+        /* Центральная плашка Analyzing */
+        .center-container { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
         .glass-card {
-            width: 100%; max-width: 340px;
-            background: linear-gradient(135deg, rgba(50, 30, 80, 0.8), rgba(20, 15, 30, 0.9));
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(138, 43, 226, 0.3);
+            width: 100%;
+            background: linear-gradient(135deg, rgba(60, 30, 100, 0.8), rgba(20, 15, 30, 0.9));
+            border: 1px solid rgba(138, 43, 226, 0.4);
             border-radius: 20px; padding: 20px;
             display: flex; align-items: center; gap: 15px;
-            position: relative; z-index: 2;
+            position: relative;
             box-shadow: 0 10px 40px rgba(138, 43, 226, 0.2);
         }
-
         .logo-circle {
             width: 50px; height: 50px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(0, 255, 136, 0.3) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(138, 43, 226, 0.5) 0%, transparent 70%);
             display: flex; align-items: center; justify-content: center;
-            font-size: 28px; border: 1px solid rgba(0, 255, 136, 0.5);
+            font-size: 24px; border: 1px solid rgba(0, 255, 136, 0.5);
             box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
             animation: pulseLogo 2s infinite alternate;
         }
         @keyframes pulseLogo { from { transform: scale(1); } to { transform: scale(1.05); } }
-
-        .analyzing-text-block { display: flex; flex-direction: column; gap: 4px; z-index: 2; }
-        .analyzing-title { font-size: 20px; font-weight: 800; color: #fff; display: flex; align-items: baseline; }
+        .analyzing-title { font-size: 22px; font-weight: 800; color: #fff; display: flex; align-items: baseline; }
         .dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
         @keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
-        .analyzing-subtext { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
-
-        /* Прогресс-бар */
-        .progress-container { width: 100%; margin-top: 15px; z-index: 2;}
-        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+        .analyzing-subtext { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; margin-top: 5px; }
+        
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 10px; }
         .progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--purple), var(--green)); transition: width 0.4s ease; }
 
-        /* Кнопка Start */
-        .start-btn-container { margin-top: auto; z-index: 10; }
-        button {
-            width: 100%; padding: 16px; border: none; border-radius: 12px;
-            background: linear-gradient(135deg, #8a2be2, #00ff88);
-            color: #fff; font-size: 16px; font-weight: 800; letter-spacing: 1px;
-            cursor: pointer; transition: 0.2s;
-            box-shadow: 0 5px 20px rgba(138, 43, 226, 0.4);
+        /* Сетка карточек с графиками */
+        .readings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; color: var(--muted); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px; padding: 12px;
+            display: flex; flex-direction: column; gap: 8px;
+            position: relative; transition: 0.3s;
         }
-        button:active { transform: scale(0.98); }
+        .card.active { border-color: var(--green); box-shadow: 0 0 15px rgba(0, 255, 136, 0.15); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; }
+        .card-title { font-size: 11px; color: var(--muted); font-weight: 600; }
+        .card-value { font-size: 12px; font-weight: 600; color: var(--green); text-align: right; }
+        .mini-chart { height: 40px; width: 100%; margin-top: 5px; }
+
+        /* Кнопка Start */
+        .start-btn {
+            width: 100%; padding: 18px; border: none; border-radius: 16px;
+            background: linear-gradient(135deg, #8a2be2, #00ff88);
+            color: #000; font-size: 16px; font-weight: 900; letter-spacing: 1px;
+            cursor: pointer; transition: 0.2s; box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+            margin-top: auto;
+        }
+        .start-btn:active { transform: scale(0.98); }
 
         /* Экран результата */
-        .result-box { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .result-header { text-align: center; margin-bottom: 15px; }
-        .pair { font-size: 22px; color: var(--muted); font-weight: 600; margin-bottom: 5px; }
-        .signal { font-size: 42px; font-weight: 900; margin: 0; }
-        .signal.buy { color: var(--green); text-shadow: 0 0 30px rgba(0,255,136,0.4); }
-        .signal.sell { color: var(--red); text-shadow: 0 0 30px rgba(255,51,102,0.4); }
-        .exp { font-size: 14px; color: var(--muted); margin-top: 5px;}
+        .result-box { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .result-header { text-align: center; margin-bottom: 15px; margin-top: 10px; }
+        .result-pair { font-size: 24px; color: var(--muted); font-weight: 800; }
+        .result-signal { font-size: 48px; font-weight: 900; margin: 5px 0; }
+        .buy { color: var(--green); text-shadow: 0 0 30px rgba(0,255,136,0.4); }
+        .sell { color: var(--red); text-shadow: 0 0 30px rgba(255,51,102,0.4); }
+        .result-exp { font-size: 14px; color: var(--muted); font-weight: 600; }
 
         #chart-wrapper {
             flex-grow: 1; width: 100%; position: relative; 
-            background: var(--card-bg); backdrop-filter: blur(10px);
-            border: 1px solid var(--border);
-            border-radius: 16px; padding: 10px; box-sizing: border-box; margin-bottom: 15px; min-height: 200px;
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 16px; padding: 10px; box-sizing: border-box; margin-bottom: 15px; min-height: 220px;
         }
 
         .trade-btn {
-            display: block; width: 100%; padding: 18px; text-align: center;
-            background: linear-gradient(135deg, #00ff88, #00cc6a);
-            color: #000; font-size: 16px; font-weight: 800; text-transform: uppercase;
-            text-decoration: none; border-radius: 12px; margin-bottom: 10px;
-            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3); box-sizing: border-box;
-            transition: 0.2s;
+            display: block; width: 100%; padding: 20px; text-align: center;
+            background: var(--green); color: #000; font-size: 16px; font-weight: 900;
+            text-decoration: none; border-radius: 16px; margin-bottom: 10px;
+            box-shadow: 0 5px 25px rgba(0, 255, 136, 0.4); text-transform: uppercase;
         }
-        .trade-btn:active { transform: scale(0.98); }
-
         .btn-secondary {
-            background: rgba(255,255,255,0.05); color: var(--text); padding: 15px; box-shadow: none;
+            background: rgba(255,255,255,0.05); color: var(--text); padding: 15px; 
+            border-radius: 16px; font-weight: 600; text-align: center; text-decoration: none; display: block;
         }
     </style>
 </head>
 <body>
 
-    <div id="analysis-screen" style="display: flex; flex-direction: column; height: 100%;">
-        <div class="header"><div class="title">HardSignal AI</div></div>
+    <div id="analysis-screen" style="display: flex; flex-direction: column; min-height: 100%;">
+        
+        <div class="top-bar">
+            <h1>HardSignal AI</h1>
+            <div class="lang-btn">🌐 EN</div>
+        </div>
 
-        <div class="grid">
-            <div class="card" id="card-trend">
-                <div class="card-header"><span class="card-title">Trend - 5 sec</span><span class="card-icon">📈</span></div>
-                <div class="card-value" id="val-trend">Waiting...</div>
+        <div style="text-align: center;">
+            <div class="signal-pill">
+                <span>⏱</span> <span id="utc-clock">--:--:-- UTC</span>
             </div>
-            <div class="card" id="card-resistance">
-                <div class="card-header"><span class="card-title">Resistance</span><span class="card-icon">📊</span></div>
-                <div class="card-value" id="val-resistance">Waiting...</div>
+        </div>
+
+        <div class="terminal-card">
+            <div class="pair-info">
+                <span class="flags">🇪🇺🇺🇸</span>
+                <div>
+                    <div class="pair-name">EUR/USD OTC</div>
+                    <div class="pair-sub">OTC · 15 sec · GPT 6.0</div>
+                </div>
             </div>
-            <div class="card" id="card-momentum">
-                <div class="card-header"><span class="card-title">Momentum</span><span class="card-icon">⚡</span></div>
-                <div class="card-value" id="val-momentum">Waiting...</div>
-            </div>
-            <div class="card" id="card-volume">
-                <div class="card-header"><span class="card-title">Volume</span><span class="card-icon">🔊</span></div>
-                <div class="card-value" id="val-volume">Waiting...</div>
-            </div>
+            <a href="https://u3.shortink.io/main?utm_campaign=832928&utm_source=affiliate&utm_medium=sr&a=qUgg03lCStQU7h&al=1815151&ac=main&cid=994565&code=WELCOME50" target="_blank" class="terminal-btn">Terminal ↗</a>
         </div>
 
         <div class="center-container">
             <div class="glass-card">
                 <div class="logo-circle">🧠</div>
-                <div class="analyzing-text-block">
+                <div style="flex-grow: 1;">
                     <div class="analyzing-title"><span id="anim-title">Analyzing</span><span class="dots"></span></div>
-                    <div class="analyzing-subtext"><span id="anim-subtext">Checking the hourly trend...</span></div>
-                    <div class="progress-container">
-                        <div class="progress-bar"><div class="progress" id="progress"></div></div>
-                    </div>
+                    <div class="analyzing-subtext"><span>⚙️</span> <span id="anim-subtext">Checking the hourly trend...</span></div>
+                    <div class="progress-bar"><div class="progress" id="progress"></div></div>
                 </div>
             </div>
         </div>
 
-        <div class="start-btn-container">
-            <button id="startBtn" onclick="startAnalysis()">START ANALYSIS</button>
+        <div class="readings-header">
+            <span>Readings · real market</span>
+            <span id="step-counter">0 of 4</span>
         </div>
+
+        <div class="grid">
+            <div class="card" id="card-trend">
+                <div class="card-header"><span class="card-title">Trend · 5 sec</span><span class="card-value" id="val-trend">...</span></div>
+                <div class="mini-chart"><canvas id="chart-trend"></canvas></div>
+            </div>
+            <div class="card" id="card-support">
+                <div class="card-header"><span class="card-title">Support</span><span class="card-value" id="val-support">...</span></div>
+                <div class="mini-chart"><canvas id="chart-support"></canvas></div>
+            </div>
+            <div class="card" id="card-momentum">
+                <div class="card-header"><span class="card-title">Momentum</span><span class="card-value" id="val-momentum">...</span></div>
+                <div class="mini-chart"><canvas id="chart-momentum"></canvas></div>
+            </div>
+            <div class="card" id="card-volume">
+                <div class="card-header"><span class="card-title">Volume</span><span class="card-value" id="val-volume">...</span></div>
+                <div class="mini-chart"><canvas id="chart-volume"></canvas></div>
+            </div>
+        </div>
+
+        <button class="start-btn" id="startBtn" onclick="startAnalysis()">START ANALYSIS</button>
     </div>
 
+    <!-- ЭКРАН РЕЗУЛЬТАТА -->
     <div class="result-box" id="result-screen">
         <div class="result-header">
-            <div class="pair" id="result-pair">EUR/USD OTC</div>
-            <div class="signal" id="result-signal">BUY</div>
-            <div class="exp" id="result-exp">Expiration: 3 min</div>
+            <div class="result-pair" id="result-pair">EUR/USD OTC</div>
+            <div class="result-signal" id="result-signal">BUY</div>
+            <div class="result-exp" id="result-exp">Expiration: 3 min</div>
         </div>
+        
         <div id="chart-wrapper">
-            <canvas id="myChart"></canvas>
+            <canvas id="mainChart"></canvas>
         </div>
         
         <a href="https://u3.shortink.io/main?utm_campaign=832928&utm_source=affiliate&utm_medium=sr&a=qUgg03lCStQU7h&al=1815151&ac=main&cid=994565&code=WELCOME50" target="_blank" class="trade-btn" id="trade-link">
             TRADE ON POCKET OPTION
         </a>
         
-        <button onclick="location.reload()" class="btn-secondary">Analyze Again</button>
+        <a href="#" onclick="location.reload()" class="btn-secondary">Analyze Again</a>
     </div>
 
     <script>
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
 
-        const pairs = ["EUR/USD OTC", "GBP/USD OTC", "USD/JPY OTC", "AUD/CAD OTC", "NZD/USD OTC", "USD/CHF OTC", "EUR/GBP OTC", "USD/CAD OTC"];
-        let myChartInstance = null;
+        // Обновление часов UTC
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('utc-clock').innerText = now.toISOString().substr(11, 8) + ' UTC';
+        }, 1000);
+
+        const pairs = ["EUR/USD OTC", "GBP/USD OTC", "USD/JPY OTC", "AUD/CAD OTC", "NZD/USD OTC"];
+        let mainChartInstance = null;
         
+        // Создаем фейковые мини-графики в карточках
+        function initMiniCharts() {
+            const charts = ['chart-trend', 'chart-support', 'chart-momentum', 'chart-volume'];
+            charts.forEach((id, index) => {
+                const ctx = document.getElementById(id).getContext('2d');
+                const data = Array.from({length: 15}, () => Math.random() * 100);
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: data.map((_, i) => i), datasets: [{ data: data, borderColor: 'rgba(0, 255, 136, 0.5)', borderWidth: 2, pointRadius: 0, fill: false, tension: 0.4 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, animation: false }
+                });
+            });
+        }
+        initMiniCharts();
+
         function startAnalysis() {
             document.getElementById('startBtn').style.display = 'none';
             
-            const cards = ['card-trend', 'card-resistance', 'card-momentum', 'card-volume'];
-            const vals = ['val-trend', 'val-resistance', 'val-momentum', 'val-volume'];
-            const subtexts = ["Checking the hourly trend...", "Analyzing support levels...", "Measuring momentum...", "Processing volume data..."];
-            const values = ["BULLISH", "SUPPORT", "STRONG", "HIGH"];
+            const cards = ['card-trend', 'card-support', 'card-momentum', 'card-volume'];
+            const vals = ['val-trend', 'val-support', 'val-momentum', 'val-volume'];
+            const subtexts = ["Checking the hourly trend...", "Analyzing support levels...", "Measuring momentum...", "Processing volume..."];
+            const values = ["BULL", "SUPP", "STRG", "HIGH"];
 
             let i = 0;
             const interval = setInterval(() => {
                 if (i < cards.length) {
                     document.getElementById(cards[i]).classList.add('active');
                     document.getElementById(vals[i]).innerText = values[i];
+                    
                     document.getElementById('anim-subtext').innerText = subtexts[i];
+                    document.getElementById('step-counter').innerText = `${i + 1} of 4`;
                     document.getElementById('progress').style.width = ((i + 1) / cards.length) * 100 + '%';
                     i++;
                 } else {
@@ -243,23 +310,23 @@
             document.getElementById('result-exp').innerText = `Expiration: ${exp} min`;
             const sigEl = document.getElementById('result-signal');
             sigEl.innerText = isBuy ? "BUY 📈" : "SELL 📉";
-            sigEl.className = isBuy ? "signal buy" : "signal sell";
+            sigEl.className = isBuy ? "result-signal buy" : "result-signal sell";
 
             const tradeBtn = document.getElementById('trade-link');
             if (isBuy) {
-                tradeBtn.style.background = "linear-gradient(135deg, #00ff88, #00cc6a)";
+                tradeBtn.style.background = "var(--green)";
                 tradeBtn.innerText = "BUY NOW ON POCKET OPTION";
             } else {
-                tradeBtn.style.background = "linear-gradient(135deg, #ff3366, #cc2952)";
+                tradeBtn.style.background = "var(--red)";
                 tradeBtn.style.color = "#fff";
                 tradeBtn.innerText = "SELL NOW ON POCKET OPTION";
             }
 
-            setTimeout(() => renderChart(isBuy), 100);
+            setTimeout(() => renderMainChart(isBuy), 100);
         }
 
-        function renderChart(isBuy) {
-            const ctx = document.getElementById('myChart').getContext('2d');
+        function renderMainChart(isBuy) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
             const labels = [];
             const dataPoints = [];
             let currentPrice = 1.0850;
@@ -272,12 +339,12 @@
                 dataPoints.push(currentPrice);
             }
 
-            if (myChartInstance) { myChartInstance.destroy(); }
+            if (mainChartInstance) { mainChartInstance.destroy(); }
 
             const lineColor = isBuy ? '#00ff88' : '#ff3366';
             const bgColor = isBuy ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)';
 
-            myChartInstance = new Chart(ctx, {
+            mainChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
