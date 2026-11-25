@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HardSignal AI</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,17 +22,22 @@
             --muted: #8b8b9f;
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             background: radial-gradient(circle at top, #1a0b2e 0%, #0a0514 60%);
             color: var(--text);
             font-family: 'Inter', sans-serif;
             margin: 0; padding: 12px;
-            display: flex; flex-direction: column; min-height: 100vh; box-sizing: border-box;
+            display: flex; flex-direction: column; min-height: 100vh;
             overflow-y: auto; overflow-x: hidden;
+            width: 100vw;
         }
         
         /* Шапка */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%;}
         .top-bar h1 { font-size: 18px; font-weight: 800; margin: 0; background: linear-gradient(90deg, #fff, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .lang-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 11px; }
 
@@ -57,69 +62,81 @@
             backdrop-filter: blur(12px);
             border: 1px solid var(--border);
             border-radius: 14px;
-            padding: 12px;
+            padding: 10px;
             margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            width: 100%;
         }
         .pair-info { display: flex; align-items: center; gap: 8px; }
-        .flags { font-size: 18px; }
-        .pair-name { font-weight: 800; font-size: 14px; }
-        .pair-sub { font-size: 10px; color: var(--gold); font-weight: 600; }
+        .flags { font-size: 16px; }
+        .pair-name { font-weight: 800; font-size: 13px; }
+        .pair-sub { font-size: 9px; color: var(--gold); font-weight: 600; }
         .terminal-btn {
             background: rgba(255, 215, 0, 0.1);
             border: 1px solid rgba(255, 215, 0, 0.3);
             color: var(--gold);
-            padding: 6px 10px;
+            padding: 5px 8px;
             border-radius: 8px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             text-decoration: none;
         }
 
         /* Центральная плашка Analyzing */
-        .center-container { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+        .center-container { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; width: 100%;}
         .glass-card {
             width: 100%;
             background: linear-gradient(135deg, rgba(60, 30, 100, 0.8), rgba(20, 15, 30, 0.9));
             border: 1px solid rgba(138, 43, 226, 0.4);
-            border-radius: 16px; padding: 15px;
-            display: flex; align-items: center; gap: 12px;
+            border-radius: 16px; padding: 12px;
+            display: flex; align-items: center; gap: 10px;
             box-shadow: 0 8px 30px rgba(138, 43, 226, 0.2);
         }
         .logo-circle {
-            width: 40px; height: 40px; border-radius: 50%;
+            width: 36px; height: 36px; border-radius: 50%;
             background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, transparent 70%);
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px; border: 1px solid rgba(255, 215, 0, 0.5);
+            font-size: 18px; border: 1px solid rgba(255, 215, 0, 0.5);
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
             animation: pulseLogo 2s infinite alternate;
         }
         @keyframes pulseLogo { from { transform: scale(1); } to { transform: scale(1.05); } }
-        .analyzing-title { font-size: 18px; font-weight: 800; color: #fff; display: flex; align-items: baseline; }
+        .analyzing-title { font-size: 16px; font-weight: 800; color: #fff; display: flex; align-items: baseline; }
         .dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
         @keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
-        .analyzing-subtext { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 5px; margin-top: 3px; }
+        .analyzing-subtext { font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 5px; margin-top: 2px; }
         
-        .progress-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+        .progress-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 6px; }
         .progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--purple), var(--gold)); transition: width 0.4s ease; }
 
         /* Сетка карточек */
-        .readings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; color: var(--muted); font-weight: 600;}
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .readings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; color: var(--muted); font-weight: 600; width: 100%;}
+        
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr;
+            gap: 8px; 
+            margin-bottom: 15px; 
+            width: 100%;
+        }
+        
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 12px; padding: 10px;
-            display: flex; flex-direction: column; gap: 5px;
+            border-radius: 12px; padding: 8px;
+            display: flex; flex-direction: column; gap: 4px;
             transition: 0.3s;
+            width: 100%; 
+            overflow: hidden;
         }
         .card.active { border-color: var(--gold); box-shadow: 0 0 12px rgba(255, 215, 0, 0.15); }
-        .card-header { display: flex; justify-content: space-between; align-items: center; }
-        .card-title { font-size: 10px; color: var(--muted); font-weight: 600; }
-        .card-value { font-size: 10px; font-weight: 800; color: var(--gold); text-align: right; }
-        .mini-chart { height: 30px; width: 100%; margin-top: 2px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; width: 100%;}
+        .card-title { font-size: 9px; color: var(--muted); font-weight: 600; }
+        .card-value { font-size: 9px; font-weight: 800; color: var(--gold); text-align: right; }
+        
+        .mini-chart { height: 30px; width: 100%; margin-top: 2px; position: relative; }
 
         /* Кнопка Start */
         .start-btn {
@@ -132,7 +149,7 @@
         .start-btn:active { transform: scale(0.98); }
 
         /* Экран результата */
-        .result-box { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.4s ease; }
+        .result-box { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.4s ease; width: 100%;}
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .result-header { text-align: center; margin-bottom: 15px; margin-top: 10px; }
         .result-pair { font-size: 20px; color: var(--muted); font-weight: 800; }
@@ -144,7 +161,7 @@
         #chart-wrapper {
             flex-grow: 1; width: 100%; position: relative; 
             background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: 14px; padding: 10px; box-sizing: border-box; margin-bottom: 15px; min-height: 200px;
+            border-radius: 14px; padding: 10px; margin-bottom: 15px; min-height: 200px;
         }
 
         .trade-btn {
