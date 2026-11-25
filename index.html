@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HardSignal AI Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Библиотека для графиков TradingView -->
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <!-- Подключаем Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
@@ -26,72 +26,40 @@
         }
         
         /* Шапка */
-        .header {
-            display: flex; align-items: center; justify-content: center;
-            gap: 10px; margin-bottom: 20px;
-        }
+        .header { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .ai-logo {
-            width: 40px; height: 40px;
-            background: linear-gradient(135deg, #00ff88, #0088ff);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
-            animation: pulse 2s infinite;
+            width: 40px; height: 40px; background: linear-gradient(135deg, #00ff88, #0088ff);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); animation: pulse 2s infinite;
         }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
-            50% { box-shadow: 0 0 25px rgba(0, 255, 136, 0.8); }
-            100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
-        }
+        @keyframes pulse { 0% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); } 50% { box-shadow: 0 0 25px rgba(0, 255, 136, 0.8); } 100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); } }
         .title { font-size: 22px; font-weight: bold; letter-spacing: 1px; }
         
         /* Сетка карточек */
-        .grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-            margin-bottom: 20px;
-        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .card {
-            background: var(--card-bg); border: 1px solid #2a3441;
-            border-radius: 12px; padding: 12px;
-            display: flex; flex-direction: column; gap: 8px;
-            position: relative; overflow: hidden; transition: 0.3s;
+            background: var(--card-bg); border: 1px solid #2a3441; border-radius: 12px; padding: 12px;
+            display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; transition: 0.3s;
         }
-        .card.active {
-            border-color: var(--green);
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
-        }
-        .card.active::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
-            background: var(--green);
-        }
+        .card.active { border-color: var(--green); box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
+        .card.active::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--green); }
         .card-title { font-size: 11px; color: var(--muted); text-transform: uppercase; }
         .card-value { font-size: 14px; font-weight: bold; }
         
         /* Статус */
-        .status-container {
-            background: var(--card-bg); border-radius: 12px; padding: 15px;
-            text-align: center; margin-top: auto;
-        }
+        .status-container { background: var(--card-bg); border-radius: 12px; padding: 15px; text-align: center; margin-top: auto; }
         .status-text { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
-        .progress-bar {
-            width: 100%; height: 6px; background: #2a3441; border-radius: 3px;
-            overflow: hidden; margin-bottom: 15px;
-        }
+        .progress-bar { width: 100%; height: 6px; background: #2a3441; border-radius: 3px; overflow: hidden; margin-bottom: 15px; }
         .progress { width: 0%; height: 100%; background: var(--green); transition: width 0.5s ease; }
         
         button {
             width: 100%; padding: 15px; border: none; border-radius: 10px;
-            background: var(--green); color: #000; font-size: 16px; font-weight: bold;
-            cursor: pointer; transition: 0.2s;
+            background: var(--green); color: #000; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
         button:active { transform: scale(0.98); }
         
         /* Экран результата */
-        .result-box {
-            display: none; flex-direction: column; height: 100%;
-            animation: fadeIn 0.5s ease;
-        }
+        .result-box { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
         .result-header { text-align: center; margin-bottom: 10px; }
@@ -101,14 +69,10 @@
         .signal.sell { color: var(--red); text-shadow: 0 0 20px rgba(255,51,102,0.3); }
         .exp { font-size: 14px; color: var(--muted); }
 
-        /* КОНТЕЙНЕР ДЛЯ ГРАФИКА (исправлен) */
-        #chart-container {
-            width: 100%;
-            height: 350px; /* Жесткая высота, чтобы TradingView отрисовался */
-            border-radius: 12px;
-            background: var(--card-bg);
-            margin-bottom: 15px;
-            position: relative;
+        /* Контейнер для графика */
+        #chart-wrapper {
+            width: 100%; height: 300px; position: relative; background: var(--card-bg);
+            border-radius: 12px; padding: 10px; box-sizing: border-box; margin-bottom: 15px;
         }
     </style>
 </head>
@@ -122,29 +86,15 @@
         </div>
 
         <div class="grid">
-            <div class="card" id="card-trend">
-                <div class="card-title">Trend Analysis</div>
-                <div class="card-value" id="val-trend">Waiting...</div>
-            </div>
-            <div class="card" id="card-resistance">
-                <div class="card-title">Resistance</div>
-                <div class="card-value" id="val-resistance">Waiting...</div>
-            </div>
-            <div class="card" id="card-momentum">
-                <div class="card-title">Momentum</div>
-                <div class="card-value" id="val-momentum">Waiting...</div>
-            </div>
-            <div class="card" id="card-volume">
-                <div class="card-title">Volume</div>
-                <div class="card-value" id="val-volume">Waiting...</div>
-            </div>
+            <div class="card" id="card-trend"><div class="card-title">Trend Analysis</div><div class="card-value" id="val-trend">Waiting...</div></div>
+            <div class="card" id="card-resistance"><div class="card-title">Resistance</div><div class="card-value" id="val-resistance">Waiting...</div></div>
+            <div class="card" id="card-momentum"><div class="card-title">Momentum</div><div class="card-value" id="val-momentum">Waiting...</div></div>
+            <div class="card" id="card-volume"><div class="card-title">Volume</div><div class="card-value" id="val-volume">Waiting...</div></div>
         </div>
 
         <div class="status-container">
             <div class="status-text" id="status">System Ready</div>
-            <div class="progress-bar">
-                <div class="progress" id="progress"></div>
-            </div>
+            <div class="progress-bar"><div class="progress" id="progress"></div></div>
             <button id="startBtn" onclick="startAnalysis()">🚀 START ANALYSIS</button>
         </div>
     </div>
@@ -156,7 +106,9 @@
             <div class="signal" id="result-signal">BUY</div>
             <div class="exp" id="result-exp">Expiration: 3 min</div>
         </div>
-        <div id="chart-container"></div>
+        <div id="chart-wrapper">
+            <canvas id="myChart"></canvas>
+        </div>
         <button onclick="location.reload()" style="background: #2a3441; color: white;">🔄 Analyze Again</button>
     </div>
 
@@ -165,6 +117,7 @@
         Telegram.WebApp.expand();
 
         const pairs = ["EUR/USD OTC", "GBP/USD OTC", "USD/JPY OTC", "AUD/CAD OTC", "NZD/USD OTC", "USD/CHF OTC", "EUR/GBP OTC", "USD/CAD OTC"];
+        let myChartInstance = null; // Переменная для хранения графика
         
         function startAnalysis() {
             document.getElementById('startBtn').style.display = 'none';
@@ -193,11 +146,9 @@
         }
 
         function showResult() {
-            // Скрываем экран анализа, показываем результат
             document.getElementById('analysis-screen').style.display = 'none';
             document.getElementById('result-screen').style.display = 'flex';
             
-            // Рандомные данные
             const isBuy = Math.random() > 0.5;
             const randomPair = pairs[Math.floor(Math.random() * pairs.length)];
             const exp = [1, 3, 5][Math.floor(Math.random() * 3)];
@@ -208,55 +159,63 @@
             sigEl.innerText = isBuy ? "BUY 📈" : "SELL 📉";
             sigEl.className = isBuy ? "signal buy" : "signal sell";
 
-            // Вызываем отрисовку графика с небольшой задержкой, чтобы DOM успел обновиться
-            setTimeout(() => {
-                renderChart(isBuy);
-            }, 100);
+            // Отрисовываем график
+            renderChart(isBuy);
         }
 
         function renderChart(isBuy) {
-            const container = document.getElementById('chart-container');
-            container.innerHTML = ''; // Очищаем контейнер перед новой отрисовкой
+            const ctx = document.getElementById('myChart').getContext('2d');
             
-            // Инициализация графика
-            const chart = LightweightCharts.createChart(container, {
-                width: container.clientWidth,
-                height: container.clientHeight, // Берем высоту из CSS (350px)
-                layout: { background: { color: '#151a23' }, textColor: '#64748b' },
-                grid: { vertLines: { color: '#2a3441' }, horzLines: { color: '#2a3441' } },
-                timeScale: { borderColor: '#2a3441', visible: false },
-                rightPriceScale: { borderColor: '#2a3441' },
-            });
-
-            // Создаем серию свечей
-            const candleSeries = chart.addCandlestickSeries({
-                upColor: '#00ff88', downColor: '#ff3366', borderVisible: false,
-                wickUpColor: '#00ff88', wickDownColor: '#ff3366',
-            });
-
-            // Генерация фейковых данных
-            const data = [];
-            let time = Math.floor(Date.now() / 1000) - (30 * 60); // 30 минут назад
-            let open = 1.0850;
+            // Генерируем данные в виде линии, повторяющей свечи
+            const labels = [];
+            const dataPoints = [];
+            let currentPrice = 1.0850;
 
             for (let i = 0; i < 30; i++) {
-                // Логика направления: 
-                // Если BUY, то шанс роста 70% (0.3), если SELL - 30% (0.7)
-                let trendBias = isBuy ? 0.3 : 0.7; 
-                
-                // Изменение цены
-                let change = (Math.random() - trendBias) * 0.002;
-                
-                let close = open + change;
-                let high = Math.max(open, close) + Math.random() * 0.0008;
-                let low = Math.min(open, close) - Math.random() * 0.0008;
-                
-                data.push({ time: time + i * 60, open: open, high: high, low: low, close: close });
-                open = close;
+                labels.push('');
+                // Логика: если BUY, то тренд вверх, если SELL - вниз
+                let trendBias = isBuy ? 0.0002 : -0.0002; 
+                let change = (Math.random() - 0.5) * 0.001 + trendBias;
+                currentPrice += change;
+                dataPoints.push(currentPrice);
             }
 
-            candleSeries.setData(data);
-            chart.timeScale().fitContent();
+            // Если график уже был, уничтожаем старый
+            if (myChartInstance) { myChartInstance.destroy(); }
+
+            // Цвет линии зависит от сигнала
+            const lineColor = isBuy ? '#00ff88' : '#ff3366';
+            const bgColor = isBuy ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)';
+
+            myChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataPoints,
+                        borderColor: lineColor,
+                        backgroundColor: bgColor,
+                        borderWidth: 2,
+                        pointRadius: 0, // Убираем точки
+                        fill: true,
+                        tension: 0.3 // Плавная линия
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false }, // Скрываем ось X
+                        y: { 
+                            display: true, 
+                            position: 'right',
+                            grid: { color: '#2a3441' },
+                            ticks: { color: '#64748b', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
         }
     </script>
 </body>
