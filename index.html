@@ -12,7 +12,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
 
-        /* ========== ОБЩИЕ ПЕРЕМЕННЫЕ ========== */
         :root {
             --bg: #0a0514;
             --card-bg: rgba(25, 20, 40, 0.6);
@@ -24,8 +23,6 @@
             --blue: #3b82f6;
             --text: #ffffff;
             --muted: #8b8b9f;
-            
-            /* Переменные для второй страницы */
             --prem-bg: #0d1117;
             --prem-card: #161b22;
             --prem-border: #21262d;
@@ -47,7 +44,6 @@
             overflow-y: auto; overflow-x: hidden;
         }
 
-        /* ================== ПЕРВАЯ СТРАНИЦА ================== */
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .top-bar h1 { font-size: 18px; font-weight: 800; margin: 0; background: linear-gradient(90deg, #fff, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
@@ -164,7 +160,6 @@
             filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
         }
 
-        /* ================== ВТОРАЯ СТРАНИЦА (ПРЕМИУМ) ================== */
         #result-screen {
             display: none;
             flex-direction: column;
@@ -191,7 +186,6 @@
         .prem-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--prem-green); box-shadow: 0 0 6px var(--prem-green); }
         .prem-status-text { font-size: 10px; font-weight: 600; color: var(--prem-green); letter-spacing: 0.5px; }
 
-        /* AI CORE на второй странице (New Analysis) — ТЕПЕРЬ СВЕРХУ */
         .new-analysis-container {
             background: var(--prem-card);
             border: 1px solid var(--prem-border);
@@ -270,7 +264,6 @@
 </head>
 <body>
 
-    <!-- ЭКРАН БЛОКИРОВКИ -->
     <div id="lock-screen" class="lock-screen">
         <div class="lock-icon">🔒</div>
         <div class="lock-title">Access Locked</div>
@@ -295,7 +288,6 @@
         </button>
     </div>
 
-    <!-- ПЕРВАЯ СТРАНИЦА (ОСНОВНОЙ ЭКРАН) -->
     <div id="app-screen" style="display: none; flex-direction: column; min-height: 100%;">
         <div class="top-bar">
             <h1>HardSignal AI</h1>
@@ -360,7 +352,6 @@
         <button class="start-btn" id="startBtn" onclick="startAnalysis()">START ANALYSIS</button>
     </div>
 
-    <!-- ВТОРАЯ СТРАНИЦА (ПРЕМИУМ РЕЗУЛЬТАТ) -->
     <div id="result-screen">
         <div class="prem-header">
             <div class="prem-header-left">
@@ -373,7 +364,6 @@
             </div>
         </div>
 
-        <!-- AI CORE: NEW ANALYSIS (СВЕРХУ) -->
         <div class="new-analysis-container" id="newAnalysisBtn" onclick="runNewAnalysis()">
             <div class="ai-core" id="newAiCore">
                 <div class="ai-core-ring"></div>
@@ -387,14 +377,13 @@
             </div>
         </div>
 
-        <!-- Market Analysis -->
         <div class="prem-card">
             <div class="prem-card-header">
                 <div class="prem-card-title">Market Analysis</div>
                 <div class="prem-card-title">OTC Market</div>
             </div>
             <div class="prem-market-pair">
-                <span id="prem-pair-name">NZD/USD OTC</span>
+                <span id="prem-pair-name">EUR/USD OTC</span>
                 <span class="prem-market-direction bullish" id="prem-direction">BULLISH</span>
             </div>
             <div class="prem-chart-container">
@@ -403,7 +392,6 @@
             <div class="prem-chart-label">Illustrative price chart</div>
         </div>
 
-        <!-- AI Prediction -->
         <div class="prem-signal-card">
             <div class="prem-card-header">
                 <div class="prem-card-title">AI Prediction</div>
@@ -415,7 +403,7 @@
                     <div class="prem-signal-sub" id="prem-signal-sub">Bullish direction</div>
                 </div>
                 <div class="prem-signal-expiry">
-                    <div class="prem-signal-expiry-value" id="prem-expiry-value">1:00</div>
+                    <div class="prem-signal-expiry-value" id="prem-expiry-value">0:05</div>
                     <div class="prem-signal-expiry-label">Expiration</div>
                 </div>
             </div>
@@ -431,7 +419,6 @@
             </div>
         </div>
 
-        <!-- Recent Signals -->
         <div class="prem-recent-signals">
             <div class="prem-recent-header">
                 <div class="prem-recent-title">Recent Signals</div>
@@ -449,21 +436,20 @@
 
         const tgUser = Telegram.WebApp.initDataUnsafe?.user;
         const userId = tgUser ? tgUser.id : null;
-        const pairs = ["EUR/USD OTC", "GBP/USD OTC", "USD/JPY OTC", "AUD/CAD OTC", "NZD/USD OTC"];
+
+        // ===== ИЗМЕНЕНИЕ 1: только EUR/USD OTC =====
+        const pairs = ["EUR/USD OTC"];
 
         let miniCharts = {};
         let premChartInstance = null;
         let isAnalyzing = false;
         let newAnalysisInterval = null;
 
-        // ====== ИЗМЕНЕННАЯ ФУНКЦИЯ openLink ======
         function openLink(url) {
-            // Если ссылка ведёт на Telegram-канал, открываем её внутри Telegram
             if (url.includes('t.me/')) {
                 const channelUsername = url.split('t.me/')[1].split('?')[0];
                 Telegram.WebApp.openTelegramLink(`https://t.me/${channelUsername}`);
             } else {
-                // Для партнёрских ссылок Pocket Option оставляем openLink
                 if (userId) url += `&click_id=${userId}`;
                 Telegram.WebApp.openLink(url);
             }
@@ -508,13 +494,11 @@
 
         checkStatus();
 
-        // ====== ЧАСЫ UTC ======
         setInterval(() => {
             const now = new Date();
             document.getElementById('utc-clock').innerText = now.toISOString().substr(11, 8) + ' UTC';
         }, 1000);
 
-        // ====== ПЕРВАЯ СТРАНИЦА: СВЕЧНЫЕ ГРАФИКИ ======
         const chartConfigs = [
             { id: 'chart-trend', color: '#ffd700', volatility: 0.8 },
             { id: 'chart-support', color: '#8a2be2', volatility: 0.5 },
@@ -579,7 +563,6 @@
             });
         }
 
-        // ====== ПЕРВАЯ СТРАНИЦА: АНИМАЦИЯ АНАЛИЗА ======
         function startAnalysis() {
             document.getElementById('startBtn').style.display = 'none';
             
@@ -606,7 +589,6 @@
             }, 1500);
         }
 
-        // ====== ПЕРЕХОД НА ВТОРУЮ СТРАНИЦУ ======
         function showPremiumResult() {
             document.getElementById('app-screen').style.display = 'none';
             document.getElementById('result-screen').style.display = 'flex';
@@ -635,8 +617,8 @@
             badge.innerText = 'NEW SIGNAL';
             badge.className = isBuy ? 'prem-badge green' : 'prem-badge red';
 
-            const expOptions = ["0:05", "0:15", "0:30", "1:00"];
-            document.getElementById('prem-expiry-value').innerText = expOptions[Math.floor(Math.random() * expOptions.length)];
+            // ===== ИЗМЕНЕНИЕ 2: всегда 5 секунд =====
+            document.getElementById('prem-expiry-value').innerText = "0:05";
 
             if (premChartInstance) premChartInstance.destroy();
             renderPremChart(isBuy);
@@ -672,7 +654,6 @@
             });
         }
 
-        // ====== ВТОРАЯ СТРАНИЦА: NEW ANALYSIS (AI CORE) ======
         function resetNewAnalysisState() {
             if (newAnalysisInterval) clearInterval(newAnalysisInterval);
             document.getElementById('newAnimTitle').innerText = 'New Analysis';
